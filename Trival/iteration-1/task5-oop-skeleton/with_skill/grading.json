@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "A Node class is defined with attributes that include at least coordinates, an ID, and a demand or area field named in domain terms (demand_ton, area_sqft, etc.)",
+      "passed": true,
+      "evidence": "Node has fac_id, county_fips, lon, lat, area_sqft, demand_ton_2025, demand_ton_2030 — all domain-meaningful names matching project conventions"
+    },
+    {
+      "text": "A NetworkManager or equivalent class is defined that contains a collection of nodes and links",
+      "passed": true,
+      "evidence": "NetworkManager has self.nodes: list[Node] and self.links: list[Link], with add_node() and add_link() methods"
+    },
+    {
+      "text": "No abstract base classes or complex inheritance — flat OOP structure",
+      "passed": true,
+      "evidence": "Node and Link are @dataclass, NetworkManager is a plain class. No ABC, no inheritance chain"
+    },
+    {
+      "text": "Attributes use domain-meaningful names, not single-letter variables like 'x', 'd', 'n'",
+      "passed": true,
+      "evidence": "demand_ton_2025, area_sqft, travel_time_h, distance_km, highway_corridor, near_interstate, near_rail — all explicit domain terms"
+    },
+    {
+      "text": "Each class has a docstring describing the physical entity it represents",
+      "passed": true,
+      "evidence": "Node: 'A candidate regional hub facility in the freight network. Physical grounding...'; Link: 'A directed freight corridor...'; NetworkManager: 'Container and operator for the full regional hub network. Physical grounding...'"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

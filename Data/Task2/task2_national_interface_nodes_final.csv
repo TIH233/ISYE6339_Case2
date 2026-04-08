@@ -1,0 +1,13 @@
+node_name,state_name,node_type,interface_class,tons_2025,tons_2030
+"LUCAS, OH",OH,external_domestic_hub,national,24970.404,24486.389
+"HARRIS, TX",TX,external_domestic_hub,national,24363.121,23890.877
+"COOK, IL",IL,external_domestic_hub,national,24107.61,23640.316
+"FRANKLIN, OH",OH,external_domestic_hub,national,21339.086,20925.457
+"CUYAHOGA, OH",OH,external_domestic_hub,national,21278.725,20866.268
+"HAMILTON, OH",OH,external_domestic_hub,national,21233.752,20822.166
+"LOS ANGELES, CA",CA,external_domestic_hub,national,15785.006,15479.036
+"WEBB, TX",TX,external_domestic_hub,national,13995.279,13724.0
+"STARK, OH",OH,external_domestic_hub,national,12444.701,12203.479
+"JEFFERSON, KY",KY,external_domestic_hub,national,11356.382,11136.254
+"MECKLENBURG, NC",NC,external_domestic_hub,national,11290.301,11071.454
+"WAYNE, MI",MI,external_domestic_hub,national,11273.386,11054.867

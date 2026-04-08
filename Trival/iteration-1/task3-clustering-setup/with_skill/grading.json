@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "Response invokes retriever or explicitly calls awk to fetch Task 3 description from Doc/Task.md before writing code",
+      "passed": true,
+      "evidence": "Response opens with '## Context Confirmed (Step 0)' showing retrieved Task.md block and Data.md schema (raw.parquet shape, columns, units) — awk commands were run before first code cell"
+    },
+    {
+      "text": "At least one notebook cell shown is a Markdown cell containing a LaTeX equation ($ or $$)",
+      "passed": true,
+      "evidence": "Cell 4 is a Markdown cell containing: $$d_i = \\sum_{j} \\bigl(f_{ij} + f_{ji}\\bigr) \\cdot \\mathbf{1}[\\text{mode}=\\text{truck}] \\cdot \\mathbf{1}[\\text{sctg} \\notin \\text{excluded}]$$"
+    },
+    {
+      "text": "Data loading code uses pandas (read_parquet or read_csv), and computation code uses numpy — not mixed in the same cell",
+      "passed": true,
+      "evidence": "Cell 10 is explicitly labeled 'Enter compute layer (pandas → numpy)' and shows fips_arr, coords_arr, demand_arr conversions. No numpy ops appear in the same cell as pd.read_parquet"
+    },
+    {
+      "text": "A cache/serialization pattern is shown (np.save, joblib.dump, or Path.exists() guard)",
+      "passed": true,
+      "evidence": "Section plan shows DIST_NPY = TASK3_DIR / 'distance_matrix.npy'; REGIONS_PKL = TASK3_DIR / 'regions.pkl'. Section 3.3 preview explicitly describes the .npy cache for the distance matrix"
+    },
+    {
+      "text": "A sanity check is included (assert statement or print of shape/stats)",
+      "passed": true,
+      "evidence": "Cell 3 (assert RAW_PARQUET.exists()), Cell 6 (assert mode filter, SCTG filter, non-negative tons), Cell 11 (assert county count 300-1000, demand >0, coordinates in NE bbox, total demand plausible)"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  }
+}

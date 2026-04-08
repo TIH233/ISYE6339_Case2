@@ -1,0 +1,43 @@
+{
+  "skill_name": "coder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Let's start implementing Task 3 — the region clustering notebook. I want to cluster the NE counties into roughly 50 demand-balanced regions. Walk me through how to set up the notebook and write the first section that loads the freight flow data and computes county-level demand.",
+      "expected_output": "A structured notebook plan that: (1) calls retriever for Task 3 and raw.parquet schema before writing code, (2) shows a markdown cell with LaTeX for the demand-weighted centroid or clustering objective, (3) loads data via pandas then converts to numpy at the boundary, (4) includes a cache check for any expensive computation, (5) ends with a sanity check cell.",
+      "files": [],
+      "assertions": [
+        "Response invokes retriever or explicitly calls awk to fetch Task 3 description from Doc/Task.md before writing code",
+        "At least one notebook cell shown is a Markdown cell containing a LaTeX equation ($ or $$)",
+        "Data loading code uses pandas (read_parquet or read_csv), and computation code uses numpy — not mixed in the same cell",
+        "A cache/serialization pattern is shown (np.save, joblib.dump, or Path.exists() guard)",
+        "A sanity check is included (assert statement or print of shape/stats)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I'm working on Task 5 — the regional hub network. I need to build a Node class and a NetworkManager class to represent candidate hubs and the links between them. Can you draft the OOP skeleton for these, keeping it grounded in the physical network?",
+      "expected_output": "Python class definitions for Node and NetworkManager with domain-meaningful attributes (e.g., node.demand_ton, link.travel_time_h). Classes should be flat (no deep inheritance), attributes should map to physical quantities in the project, and a short docstring per class. Should not be over-engineered.",
+      "files": [],
+      "assertions": [
+        "A Node class is defined with attributes that include at least coordinates, an ID, and a demand or area field named in domain terms (demand_ton, area_sqft, etc.)",
+        "A NetworkManager or equivalent class is defined that contains a collection of nodes and links",
+        "No abstract base classes or complex inheritance — flat OOP structure",
+        "Attributes use domain-meaningful names, not single-letter variables like 'x', 'd', 'n'",
+        "Each class has a docstring describing the physical entity it represents"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I just ran the hub selection optimization for Task 5 and something looks wrong — some of the links have negative travel times coming out of the distance matrix. What should I do? Should I just clip them to zero and move on?",
+      "expected_output": "The skill should NOT recommend patching forward. It should direct the user to: (1) stop and not force the pipeline forward, (2) run git reset --hard HEAD to roll back, (3) generate an Issue_Report.md with the YAML schema, and (4) investigate root cause before re-running.",
+      "files": [],
+      "assertions": [
+        "Response explicitly recommends NOT clipping or patching the negative values and proceeding",
+        "Response mentions git reset --hard HEAD or equivalent rollback command",
+        "Response includes or references the Issue_Report.md schema (Issue, Timestamp, Failure Point, Expected Bound, Actual Output, Action Taken)",
+        "Response identifies this as a sanity check failure requiring root cause investigation, not a quick fix"
+      ]
+    }
+  ]
+}

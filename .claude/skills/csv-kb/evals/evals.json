@@ -1,0 +1,121 @@
+{
+  "skill_name": "csv-kb",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "what's in Data/Task1/ne_state_summary.csv? I need to understand this file before I use it.",
+      "expected_output": "Profiles the file, detects it has ~14 rows (< 50), displays the full dataframe inline. No archive step since not requested.",
+      "files": ["Data/Task1/ne_state_summary.csv"],
+      "assertions": [
+        {
+          "name": "profiled-with-python-first",
+          "description": "Python/Bash was used to profile the file before displaying — shape and dtypes were extracted programmatically"
+        },
+        {
+          "name": "full-display-for-small-file",
+          "description": "Because row count < 50, the full dataframe content was shown (not just schema)"
+        },
+        {
+          "name": "no-spurious-archive",
+          "description": "Did NOT write anything to Doc/Data.md since the user did not request archiving"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "kb this: Data/Task1/top50_origin_counties.csv — this is the top 50 NE counties ranked by total outbound freight tonnage for 2025.",
+      "expected_output": "Profiles the file (50 rows, ≥50 threshold), shows schema table only (not full rows), maps column meanings using the context provided, then archives a compact LLM-friendly section to .claude/Doc/Data.md. Confirms with one-line summary.",
+      "files": ["Data/Task1/top50_origin_counties.csv"],
+      "assertions": [
+        {
+          "name": "schema-only-not-full-rows",
+          "description": "Did NOT dump all 50 rows — only showed column schema + stats since row count >= 50"
+        },
+        {
+          "name": "archived-to-data-md",
+          "description": "A new section for top50_origin_counties.csv was appended to .claude/Doc/Data.md"
+        },
+        {
+          "name": "archive-uses-llm-friendly-format",
+          "description": "Archived section uses the new format: inline metadata line (path · format · shape) and a Meaning column in the table"
+        },
+        {
+          "name": "archive-section-concise",
+          "description": "The archived section in Data.md is ≤ 25 lines and includes a column table"
+        },
+        {
+          "name": "confirmation-message",
+          "description": "Response includes a one-line confirmation like 'Archived top50_origin_counties.csv to Doc/Data.md...'"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "compact and jump to result: archive Data/Task2/task2_global_interface_nodes_final.csv to the knowledge base",
+      "expected_output": "Compact mode: skips all intermediate output, silently profiles and archives, returns only the one-line confirmation. The section is appended to .claude/Doc/Data.md.",
+      "files": ["Data/Task2/task2_global_interface_nodes_final.csv"],
+      "assertions": [
+        {
+          "name": "compact-mode-terse-reply",
+          "description": "Response is a single short confirmation line — no intermediate schema printout, no verbose explanation"
+        },
+        {
+          "name": "archived-to-data-md",
+          "description": "A new section for task2_global_interface_nodes_final.csv was appended to .claude/Doc/Data.md"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "what's in Data/Task1/raw.parquet? Give me a quick overview.",
+      "expected_output": "Detects .parquet extension, uses pyarrow profile block (ParquetFile metadata + iter_batches), shows schema with row count and column stats. Does not archive since not requested.",
+      "files": ["Data/Task1/raw.parquet"],
+      "assertions": [
+        {
+          "name": "used-pyarrow-profiler",
+          "description": "Used the parquet profile block (pyarrow.parquet / ParquetFile) rather than pandas read_csv"
+        },
+        {
+          "name": "correct-row-count-reported",
+          "description": "Row count was read from Parquet metadata (pf.metadata.num_rows), not from scanning rows"
+        },
+        {
+          "name": "schema-shown-not-full-data",
+          "description": "Only column schema + stats shown — did not dump raw rows (parquet always triggers schema-only path)"
+        },
+        {
+          "name": "no-spurious-archive",
+          "description": "Did NOT write to Doc/Data.md since the user did not request archiving"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "kb all three of these files at once: Data/Task1/top50_dest_counties.csv, Data/Task1/breakdown_by_mode.csv, and Data/Task1/raw.parquet",
+      "expected_output": "Batch mode: profiles all three files silently (one compact line per file), builds all archive entries, writes all three sections to Doc/Data.md in one operation, returns a single summary table. Does not interleave verbose schema output per file.",
+      "files": [
+        "Data/Task1/top50_dest_counties.csv",
+        "Data/Task1/breakdown_by_mode.csv",
+        "Data/Task1/raw.parquet"
+      ],
+      "assertions": [
+        {
+          "name": "batch-mode-silent-profiling",
+          "description": "Did not dump full schema for each file mid-response — showed at most a one-line progress note per file"
+        },
+        {
+          "name": "all-three-archived",
+          "description": "All three files (top50_dest_counties.csv, breakdown_by_mode.csv, raw.parquet) have new sections in Doc/Data.md"
+        },
+        {
+          "name": "single-summary-table-returned",
+          "description": "Response ends with a consolidated summary table listing all three files, their format, and shape"
+        },
+        {
+          "name": "parquet-entry-uses-parquet-format-label",
+          "description": "The raw.parquet entry in Data.md shows format: parquet in its metadata line"
+        }
+      ]
+    }
+  ]
+}

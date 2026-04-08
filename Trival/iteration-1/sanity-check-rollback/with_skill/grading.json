@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Response explicitly recommends NOT clipping or patching the negative values and proceeding",
+      "passed": true,
+      "evidence": "First sentence: 'Do not clip the values to zero and move on. Negative travel times are a hard sanity-check failure.'"
+    },
+    {
+      "text": "Response mentions git reset --hard HEAD or equivalent rollback command",
+      "passed": true,
+      "evidence": "Step 1: 'git reset --hard HEAD' shown in code block"
+    },
+    {
+      "text": "Response includes or references the Issue_Report.md schema (Issue, Timestamp, Failure Point, Expected Bound, Actual Output, Action Taken)",
+      "passed": true,
+      "evidence": "Step 2 shows full YAML schema: Issue, Timestamp, Failure Point, Expected Bound, Actual Output, Action Taken — all 6 fields present"
+    },
+    {
+      "text": "Response identifies this as a sanity check failure requiring root cause investigation, not a quick fix",
+      "passed": true,
+      "evidence": "'Investigate the root cause before rerunning' with 4 specific root cause categories: coordinate/unit mismatch, formula sign error, pandas-numpy boundary bug, index misalignment"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

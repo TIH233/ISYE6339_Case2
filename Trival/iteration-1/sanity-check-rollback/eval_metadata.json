@@ -1,0 +1,11 @@
+{
+  "eval_id": 3,
+  "eval_name": "sanity-check-rollback",
+  "prompt": "I just ran the hub selection optimization for Task 5 and something looks wrong — some of the links have negative travel times coming out of the distance matrix. What should I do? Should I just clip them to zero and move on?",
+  "assertions": [
+    "Response explicitly recommends NOT clipping or patching the negative values and proceeding",
+    "Response mentions git reset --hard HEAD or equivalent rollback command",
+    "Response includes or references the Issue_Report.md schema (Issue, Timestamp, Failure Point, Expected Bound, Actual Output, Action Taken)",
+    "Response identifies this as a sanity check failure requiring root cause investigation, not a quick fix"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "task5-oop-skeleton",
+  "prompt": "I'm working on Task 5 — the regional hub network. I need to build a Node class and a NetworkManager class to represent candidate hubs and the links between them. Can you draft the OOP skeleton for these, keeping it grounded in the physical network?",
+  "assertions": [
+    "A Node class is defined with attributes that include at least coordinates, an ID, and a demand or area field named in domain terms (demand_ton, area_sqft, etc.)",
+    "A NetworkManager or equivalent class is defined that contains a collection of nodes and links",
+    "No abstract base classes or complex inheritance — flat OOP structure",
+    "Attributes use domain-meaningful names, not single-letter variables like 'x', 'd', 'n'",
+    "Each class has a docstring describing the physical entity it represents"
+  ]
+}

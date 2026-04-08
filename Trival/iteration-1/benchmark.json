@@ -1,0 +1,182 @@
+{
+  "metadata": {
+    "skill_name": "coder",
+    "skill_path": ".claude/skills/coder",
+    "executor_model": "claude-sonnet-4-6",
+    "analyzer_model": "claude-sonnet-4-6",
+    "timestamp": "2026-04-08T06:00:00Z",
+    "evals_run": ["task3-clustering-setup", "task5-oop-skeleton", "sanity-check-rollback"],
+    "runs_per_configuration": 1
+  },
+
+  "runs": [
+    {
+      "eval_id": 1,
+      "eval_name": "task3-clustering-setup",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 127.5,
+        "tokens": 27404,
+        "tool_calls": 10,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Retriever called first (awk on Task.md / Data.md)", "passed": true, "evidence": "Context Confirmed section shows retrieved schema before any code cell"},
+        {"text": "Markdown cell with LaTeX equation", "passed": true, "evidence": "Cell 4 has $$d_i = \\sum_j ...$$ demand equation"},
+        {"text": "Pandas loading / numpy computation separated", "passed": true, "evidence": "Cell 10 explicitly labeled 'Enter compute layer (pandas → numpy)'"},
+        {"text": "Cache/serialization pattern shown", "passed": true, "evidence": "DIST_NPY, REGIONS_PKL paths defined; distance_matrix.npy cache described in Section 3.3 preview"},
+        {"text": "Sanity check included", "passed": true, "evidence": "Cells 3, 6, and 11 each contain assert statements with domain bounds"}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "task3-clustering-setup",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.2,
+        "passed": 1,
+        "failed": 4,
+        "total": 5,
+        "time_seconds": 119.1,
+        "tokens": 24139,
+        "tool_calls": 17,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Retriever called first (awk on Task.md / Data.md)", "passed": false, "evidence": "Browsed project files (17 tool calls) but no retriever/awk call; went straight to pd.read_parquet"},
+        {"text": "Markdown cell with LaTeX equation", "passed": false, "evidence": "Theory explained in prose; no $...$ or $$...$$ LaTeX in any cell"},
+        {"text": "Pandas loading / numpy computation separated", "passed": false, "evidence": "All computation in pandas (groupby, max(axis=1)). No numpy arrays created"},
+        {"text": "Cache/serialization pattern shown", "passed": false, "evidence": "Only pd.to_csv for county_demand.csv; no .npy cache, no joblib, no Path.exists() guard"},
+        {"text": "Sanity check included", "passed": true, "evidence": "Cell 1-D prints totals, top-10 counties, zero-demand count"}
+      ],
+      "notes": ["Baseline produced a well-structured notebook by reading project files, but missed 4/5 skill-specific conventions"]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "task5-oop-skeleton",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 153.4,
+        "tokens": 28086,
+        "tool_calls": 9,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Node class with domain-meaningful ID, coordinates, demand/area field", "passed": true, "evidence": "fac_id, county_fips, lon, lat, area_sqft, demand_ton_2025, demand_ton_2030"},
+        {"text": "NetworkManager with nodes and links", "passed": true, "evidence": "self.nodes: list[Node], self.links: list[Link], add_node(), add_link()"},
+        {"text": "No abstract base classes — flat OOP", "passed": true, "evidence": "@dataclass for Node/Link, plain class for NetworkManager, no ABC"},
+        {"text": "Domain-meaningful attribute names", "passed": true, "evidence": "demand_ton_2025, area_sqft, travel_time_h, distance_km, near_interstate"},
+        {"text": "Each class has a docstring describing physical entity", "passed": true, "evidence": "All three classes have 'Physical grounding' sections in docstrings"}
+      ],
+      "notes": ["Bonus: numpy boundary methods (coords_array, demand_vector, adjacency_matrix) added per data layer rule; serialization snippet included"]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "task5-oop-skeleton",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 149.5,
+        "tokens": 24766,
+        "tool_calls": 6,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Node class with domain-meaningful ID, coordinates, demand/area field", "passed": true, "evidence": "node_id, county_fips, lat, lon, available_area_sqft, inbound_tons_2025 — from reading User.md"},
+        {"text": "NetworkManager with nodes and links", "passed": true, "evidence": "adjacency list + node/link dicts, add_node(), add_link()"},
+        {"text": "No abstract base classes — flat OOP", "passed": true, "evidence": "@dataclass for Node/Link, plain class for NetworkManager"},
+        {"text": "Domain-meaningful attribute names", "passed": true, "evidence": "travel_time_h, available_area_sqft, inbound_tons_2025 — from User.md"},
+        {"text": "Each class has a docstring describing physical entity", "passed": true, "evidence": "All classes documented with physical descriptions"}
+      ],
+      "notes": ["Baseline passes all assertions by reading User.md which names the classes. Missing: numpy boundary methods (coords_array, adjacency_matrix). Eval 2 assertions need update to discriminate."]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "sanity-check-rollback",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 49.5,
+        "tokens": 16084,
+        "tool_calls": 4,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Refuse clipping/patching and proceeding", "passed": true, "evidence": "First sentence: 'Do not clip the values to zero and move on.'"},
+        {"text": "git reset --hard HEAD mentioned", "passed": true, "evidence": "Step 1 code block shows 'git reset --hard HEAD'"},
+        {"text": "Issue_Report.md schema with all 6 fields", "passed": true, "evidence": "YAML schema shows Issue, Timestamp, Failure Point, Expected Bound, Actual Output, Action Taken"},
+        {"text": "Root cause investigation required, not quick fix", "passed": true, "evidence": "4 root cause categories listed: coordinate mismatch, sign error, pandas-numpy boundary bug, index misalignment"}
+      ],
+      "notes": ["Concise and focused: 4 tool calls, 16k tokens. Added proactive 'pre-optimizer assert' recommendation"]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "sanity-check-rollback",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 67.6,
+        "tokens": 23680,
+        "tool_calls": 14,
+        "errors": 0
+      },
+      "expectations": [
+        {"text": "Refuse clipping/patching and proceeding", "passed": true, "evidence": "'Short answer: No, do not clip to zero and move on.' — baseline read User.md"},
+        {"text": "git reset --hard HEAD mentioned", "passed": true, "evidence": "Step 1 shows 'git reset --hard HEAD' — found in User.md"},
+        {"text": "Issue_Report.md schema with all 6 fields", "passed": true, "evidence": "Step 2 YAML schema matches — baseline sourced from User.md"},
+        {"text": "Root cause investigation required, not quick fix", "passed": true, "evidence": "4 diagnostic categories listed by baseline"}
+      ],
+      "notes": ["Non-discriminating: baseline read User.md and reproduced the protocol. 14 tool calls, 23.7k tokens — required more effort to find same answer. Eval 3 assertions need update."]
+    }
+  ],
+
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 110.1, "stddev": 44.0, "min": 49.5, "max": 153.4},
+      "tokens": {"mean": 23858, "stddev": 6227, "min": 16084, "max": 28086}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.73, "stddev": 0.39, "min": 0.20, "max": 1.0},
+      "time_seconds": {"mean": 112.1, "stddev": 36.2, "min": 67.6, "max": 149.5},
+      "tokens": {"mean": 24195, "stddev": 563, "min": 23680, "max": 24766}
+    },
+    "delta": {
+      "pass_rate": "+0.27",
+      "time_seconds": "-2.0",
+      "tokens": "-337"
+    }
+  },
+
+  "notes": [
+    "Eval 1 (task3-clustering-setup) is the strongest discriminator: skill +1.00 vs baseline +0.20. Key misses in baseline: LaTeX cells, numpy boundary, cache pattern, retriever call.",
+    "Evals 2 and 3 are non-discriminating because the baseline agent reads User.md, which already names Node/Link/NetworkManager and documents the rollback protocol. Current assertions don't test skill-unique behavior.",
+    "Skill adds efficiency: with_skill responses use fewer tokens and fewer tool calls (mean 7.7 vs 12.3) because context is pre-loaded by the skill rather than browsed from scratch.",
+    "Recommended assertion additions for iteration 2: (Eval 2) 'NetworkManager includes numpy boundary methods like coords_array() or adjacency_matrix()'; (Eval 3) 'Response instructs adding assert BEFORE optimizer call as proactive gate, not just post-hoc rollback'.",
+    "High variance in with_skill time (44s stddev) is expected — Eval 3 is fast (50s, no retriever needed), Eval 1-2 involve retriever awk calls."
+  ]
+}
