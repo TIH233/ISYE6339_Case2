@@ -4,3 +4,19 @@ __pycache__/
 .pytest_cache/
 .ipynb_checkpoints/
 *.parquet
+
+# Large geospatial / binary data files
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg
+*.sbx
+*.sbn
+*.shp.ea.iso.xml
+*.shp.iso.xml
+*.gpkg
+*.npy
+
+# Entire Data folder — synced manually between devices via rsync
+Data/
