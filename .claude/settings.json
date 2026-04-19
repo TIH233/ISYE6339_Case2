@@ -1,4 +1,9 @@
 {
-  "enabledPlugins": {
-  }
+  "permissions": {
+    "allow": [
+      "Bash(~/.venvs/general/bin/python3 -m jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.kernel_name=python3 --ExecutePreprocessor.timeout=600 map_create.ipynb)",
+      "Bash(.claude/skills/coder/scripts/gate.sh commit:*)"
+    ]
+  },
+  "enabledPlugins": {}
 }

@@ -7,7 +7,6 @@ description: >
   Trigger on any internal need like "what columns does raw.parquet have?", "what did Task 2 do?",
   "what is the path to ne_state_summary.csv?", "what is the status of Task 3?".
   Always call this before touching a data file you haven't read yet, or before starting / resuming a task.
-user-invocable: false
 allowed-tools: Bash
 ---
 

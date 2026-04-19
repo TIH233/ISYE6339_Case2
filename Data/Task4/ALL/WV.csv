@@ -1,0 +1,93 @@
+Property Address,Property Name,Building Class,Building Status,RBA,Total Available Space (SF),Rent/SF/Yr,Secondary Type,City,Percent Leased,Year Built,Year Renovated,Typical Floor Size,Parking Ratio,Ceiling Ht,Column Spacing,Number Of Loading Docks,Power,Rail Lines,Sewer,Building Operating Expenses,Capacity - Available kW,Direct Available Space,Direct Vacant Space,Drive Ins,Sprinklers,Water,Number Of Parking Spaces,Latitude,Longitude
+4200 1st Ave,,B,Existing,140000,31614,$8.50 - 9.00,Distribution,Nitro,77.42,1980,,140000,2.00,"20'0""",,6,3p,,Yes,2025 Tax @ $0.1292/sf,,31614,31614,"6/10'0""w x 12'0""h",Dry,Yes,40,38.4459371,-81.8317355
+1211 Afg Rd,"Taylor Warehouse Services, LLC",A,Existing,482250,482250,$4.50,Warehouse,Bridgeport,0.00,1979,1995,482250,0.21,"31'3""",25'w x 50'd,9,120-480v 3p,,,2025 Tax @ $0.1033/sf,,482250,482250,"8/12'0""w x 21'0""h",Wet,,100,39.2862716,-80.1820398
+927 Barlow Dr,Young's Industrial Park Building 4,B,Existing,100000,9163,$7.00,Warehouse,Charleston,90.84,2003,,100000,0.05,"20'0""",,2,Heavy,,City,2025 Tax @ $0.1842/sf,,9163,9163,"26/12'0""w x 14'0""h",None,City,5,38.3644046,-81.6095467
+3901 Camden Ave,,C,Existing,241000,150000,$2.75,Warehouse,Parkersburg,37.76,1972,2011,241000,0.21,"22'0""",24'w,7,500a/480v,,Yes,2025 Tax @ $0.0019/sf,,150000,150000,"2/12'0""w x 12'0""h",Wet,Yes,50,39.2445727,-81.5285797
+64 Waterway Dr,,B,Existing,100000,100000,$6.50,Distribution,Poca,100.00,1970,,50000,0.41,,,7,Heavy,,,2025 Tax @ $0.2182/sf,,100000,0,Yes,,,48,38.4927400,-81.8341400
+1 West Fork St,Harrison Warehouse,C,Existing,185432,185432,$5.00,Warehouse,Clarksburg,0.00,1980,,185432,,,25'w,8,100v 3p,,City,2025 Tax @ $0.0393/sf,,185432,185432,7,Dry,City,,39.2983209,-80.3550101
+2601 Madison Ave,,B,Existing,220000,220000,$8.46 - 10.34 (Est.),Warehouse,Point Pleasant,0.00,1960,,220000,0.14,"13'0""",,24,480a 3p,,Yes,2025 Tax @ $0.2409/sf,,220000,220000,3,,Yes,30,38.8728369,-82.1341812
+748 McMechen St,,B,Existing,182441,78000,$5.05 - 6.18 (Est.),Warehouse,Benwood,57.25,1940,,173319,,"32'0""",,,,,,2025 Tax @ $0.0664/sf,,78000,78000,1,,,,40.0136528,-80.7358973
+4903 Winchester Ave,Building A,A,Existing,365400,365400,$7.47 - 9.13 (Est.),Warehouse,Martinsburg,0.00,2023,,365400,1.57,"40'0""",56'w x 52'd,90,4000a/277-480v 3p,,,2025 Tax @ $0.7743/sf,,365400,365400,"4/12'0""w x 14'0""h",ESFR,,574,39.3919046,-78.0055224
+138-150 57th St SE,,B,Existing,201000,37655,$8.50,Warehouse,Charleston,81.27,1985,,201000,5.97,"24'0""",30'w x 50'd,20,Heavy,,Yes,2024 Tax @ $0.4833/sf,,37655,37655,"2/12'0""w x 14'0""h",Dry,Yes,1200,38.3155128,-81.5656371
+1330 6th St,,C,Existing,128155,,$7.92 - 9.69 (Est.),Warehouse,Charleston,100.00,,,33725,,,,3,,,,2025 Tax @ $0.0686/sf,,,0,"7/12'0""w x 12'0""h",,,40,38.3677206,-81.6584158
+N 8th & Hazlett Ave,,C,Existing,240000,,$1.33 - 1.62 (Est.),Warehouse,Wheeling,100.00,1957,2010,80000,0.63,"22'0""",,2,,,,2025 Tax @ $0.0662/sf,,,0,1,Dry,,150,40.1100500,-80.7013013
+120 W 19th St,,C,Existing,116304,,$7.41 - 9.05 (Est.),Warehouse,Nitro,100.00,,,62777,0.34,,,10,,,,2024 Tax @ $0.1579/sf,,,0,None,,,40,38.4228990,-81.8438880
+325 W 19th St,,C,Existing,137074,,$7.69 - 9.40 (Est.),Distribution,Nitro,100.00,,,137074,0.29,,,8,,,,2025 Tax @ $0.3701/sf,,,0,"1/10'0""w x 12'0""h",,,40,38.4301777,-81.8457589
+9 27th St,Liggett & Myers Tobacco Co.,C,Existing,294716,,$6.38 - 7.80 (Est.),Warehouse,Huntington,100.00,1917,,79539,,,,2,,,,2025 Tax @ $0.1076/sf,,,0,2,,,30,38.4340216,-82.4090101
+550 27th St,,B,Existing,365800,,$3.26 - 3.99 (Est.),Warehouse,Huntington,100.00,1959,,365800,0.39,"16'8""",,22,3p,,City,2025 Tax @ $0.2297/sf,,,0,3,Wet,City,30,38.4252197,-82.4034923
+213 60th St,,C,Existing,148284,,$10.73 - 13.12 (Est.),Warehouse,Vienna,100.00,1945,,148284,0.13,,,,,,,2025 Tax @ $0.0328/sf,,,0,"1/10'0""w x 12'0""h",,,20,39.3483829,-81.5383387
+180 Airport Industrial Park,,A,Existing,125500,,$10.54 - 12.89 (Est.),Warehouse,Parkersburg,100.00,1975,,123000,,"21'0""",25'w x 50'd,22,240-480v 3p,,City,,,,0,"4/10'0""w x 12'0""h",Yes,City,,39.3411762,-81.4466570
+761 Armory Rd,,B,Existing,104000,,$6.06 - 7.40 (Est.),Warehouse,Clarksburg,100.00,1962,,104000,0.09,"22'0""",25'w x 52'd,23,1p,,,,,,0,1,Dry,,10,39.2620419,-80.3630369
+2100 Beech St,REO Logistics Building 9,C,Existing,170540,,$5.62 - 6.86 (Est.),Warehouse,Kenova,100.00,1968,,170540,0.17,"19'6""",30'w x 32'd,6,220-240v 3p,Norfolk Southern,Yes,2025 Tax @ $0.1312/sf,,,0,2,Wet,Yes,30,38.4073627,-82.5866404
+1422-1430 Bigley Ave,Rex Building,B,Existing,140945,21488,$7.23 - 8.84 (Est.),Warehouse,Charleston,84.75,1962,,140945,0.27,"19'0""",26'w x 48'd,31,3p,,Yes,2024 Tax @ $0.4567/sf,,21488,21488,"4/10'0""w x 12'0""h",Dry,Yes,40,38.3601238,-81.6240773
+2898 Birch Dr,,C,Existing,120000,,$4.98 - 6.08 (Est.),Warehouse,Weirton,100.00,1978,,120000,,"16'0""",50'w,5,277-480v 3p,,City,2025 Tax @ $0.2784/sf,,,0,"1/14'0""w x 14'0""h",Wet,City,,40.3880238,-80.6163675
+3102 Blaine Blvd,,C,Existing,101565,,$7.80 - 9.53 (Est.),Warehouse,Charleston,100.00,,,101565,0.49,,,,,,,2024 Tax @ $0.0333/sf,,,0,None,,,50,38.3741822,-81.6869470
+100 Bluefield Ave,,B,Existing,102700,,$8.14 - 9.95 (Est.),Distribution,Bluefield,100.00,1989,,102700,0.58,"26'0""",23'w x 45'd,,,,,2025 Tax @ $0.5409/sf,,,0,,,,60,37.2683600,-81.2276490
+1642 Bluefield Ave,The Freight Station,C,Existing,153601,,$7.96 - 9.73 (Est.),Warehouse,Bluefield,100.00,,,87273,,,,9,,,,,,,0,None,,,30,37.2618030,-81.2434570
+3301 Camden Ave,,C,Existing,222150,,$10.69 - 13.06 (Est.),Warehouse,Parkersburg,100.00,1920,,222150,,,,16,,,,2025 Tax @ $0.0234/sf,,,0,None,,,30,39.2514750,-81.5360324
+4301 Camden Ave,Peoples Cartage Building 4,C,Existing,136888,,$10.77 - 13.17 (Est.),Warehouse,Parkersburg,100.00,1920,,136888,,,,37,,,,2025 Tax @ $0.1228/sf,,,0,None,,,50,39.2393130,-81.5260000
+4301 Camden Ave,Peoples Cartage Building 3,C,Existing,133798,,$10.77 - 13.17 (Est.),Warehouse,Parkersburg,100.00,1920,,133798,,,,,,,,2025 Tax @ $0.1228/sf,,,0,,,,,39.2384086,-81.5245169
+4301 Camden Ave,Peoples Cartage Building 9B,C,Existing,101376,,$10.78 - 13.18 (Est.),Warehouse,Parkersburg,100.00,1920,,101376,,,,,,,,2025 Tax @ $0.1228/sf,,,0,,,,,39.2393854,-81.5202467
+4301 Camden Ave,Peoples Cartage Building 8,C,Existing,101136,,$10.78 - 13.18 (Est.),Warehouse,Parkersburg,100.00,1920,,101136,,,,,,,,2025 Tax @ $0.1228/sf,,,0,,,,,39.2402261,-81.5207600
+2900-2908 Charles Ave,Dunbar Storage 1 & 2,B,Existing,139935,,$5.48 - 6.69 (Est.),Distribution,Dunbar,100.00,1962,,139935,0.71,"22'0""",24'w x 48'd,18,3p,,City,,,,0,2,Dry,City,100,38.3695745,-81.7595299
+1700 Charles St,,B,Existing,112679,,$5.96 - 7.28 (Est.),Warehouse,Wellsburg,100.00,,,56339,0.89,"36'0""",,5,480v 3p,Norfolk Southern,Yes,2025 Tax @ $0.0079/sf,,,0,None,,Yes,100,40.2805230,-80.6096351
+69 Clendening Dr,,A,Existing,176046,,$5.75 - 7.02 (Est.),Warehouse,Kearneysville,100.00,1994,,173400,1.73,"37'0""",36'w x 36'd,17,2000a/480v 3p,,,2025 Tax @ $0.7007/sf,,,0,"3/9'0""w x 9'0""h",Wet,,300,39.3557992,-77.8729112
+Colliers Steel Rd,,B,Existing,121000,,$3.47 - 4.24 (Est.),Warehouse,Colliers,100.00,1935,1986,121000,,"40'0""",25'w,8,1380a/480v 3p,,Yes,2025 Tax @ $0.0477/sf,,,0,2,Wet,Yes,,40.3730650,-80.5508030
+1129 Collins Memorial Dr,,C,Existing,116700,,$5.85 - 7.15 (Est.),Warehouse,Chester,100.00,1900,,116700,,,,,,,City,2025 Tax @ $0.2419/sf,,,0,,Dry,City,,40.6217862,-80.5533962
+100 Commercial St,,C,Existing,169788,,$10.72 - 13.10 (Est.),Warehouse,Mineral Wells,100.00,1998,,169788,,"27'0""",,,,,,2025 Tax @ $0.3283/sf,,,0,,Yes,,,39.1735189,-81.5357119
+144 County Route 35/16,Building 1,B,Existing,110000,,$8.61 - 10.52 (Est.),Warehouse,Poca,100.00,1900,,55000,,,,,,,,,,,0,,,,,38.5012910,-81.8371144
+111 Davisville Rd,,C,Existing,200000,,$10.55 - 12.89 (Est.),Warehouse,Davisville,100.00,2003,,200000,0.24,"16'0""",,18,3p,,,,,,0,"2/10'0""w x 12'0""h",Yes,,50,39.2052055,-81.4901686
+625 Depot St,,C,Existing,236474,,$10.68 - 13.05 (Est.),Warehouse,Parkersburg,,1920,,236474,0.08,,,7,,,,,,,0,Yes,,,20,39.2626397,-81.5535240
+261 Development Dr,,A,Existing,356700,,$6.65 - 8.13 (Est.),Warehouse,Martinsburg,100.00,2019,,356700,0.42,"32'0""",52'w x 52'd,45,277-480v 3p 4w,,Yes,2025 Tax @ $1.0451/sf,,,0,2,ESFR,Yes,152,39.3951969,-78.0201742
+117 S Fork Rd,,C,Existing,117000,,$5.28 - 6.45 (Est.),Warehouse,Moorefield,100.00,1920,2000,117000,,"16'0""",,5,480v 3p,,,2025 Tax @ $0.0306/sf,,,0,2,Wet,,,39.0609943,-78.9647373
+270 General Woods Dr,Spencer Veneer Plant #2,C,Existing,101864,,$13.16 - 16.09 (Est.),Warehouse,Spencer,100.00,,,101864,,"50'8""",,1,,,City,,,,0,3,,City,50,38.7927598,-81.3384247
+319 Georgia Pacific Ave,,B,Existing,180000,,$9.22 - 11.27 (Est.),Warehouse,Mount Hope,100.00,1995,,180000,0.56,,,3,,,City,2025 Tax @ $0.3034/sf,,,0,Yes,Dry,City,100,37.8989326,-81.1840782
+2101 Grace St,,C,Existing,135745,,$3.30 - 4.03 (Est.),Warehouse,Culloden,100.00,1991,,135745,0.00,"14'0""",,4,,,City,2025 Tax @ $0.1085/sf,,,0,7,,City,,38.4153700,-82.0655500
+2101 Grace St,,B,Existing,124817,,$6.51 - 7.96 (Est.),Warehouse,Culloden,100.00,1991,,124817,0.96,"22'0""",,3,,,,2025 Tax @ $0.1217/sf,,,0,None,,,120,38.4143917,-82.0646061
+118-132 Harris Dr,,C,Existing,108860,,$8.59 - 10.50 (Est.),Warehouse,Poca,100.00,1960,,108860,0.18,,,16,,,,2025 Tax @ $0.2701/sf,,,0,"5/10'0""w x 12'0""h",,,20,38.4494020,-81.8215856
+159 Harris Dr,,B,Existing,163200,,$6.45 - 7.88 (Est.),Distribution,Poca,100.00,,,163200,0.18,"28'0""",,8,,,,2025 Tax @ $0.1286/sf,,,0,None,,,30,38.4490300,-81.8196080
+402 High St,,C,Existing,300136,,$6.38 - 7.80 (Est.),Warehouse,Huntington,100.00,,,300136,,,,4,,,,2025 Tax @ $0.1580/sf,,,0,10,,,100,38.4157370,-82.3701460
+601 Independent Ave,,C,Existing,130618,,$7.69 - 9.40 (Est.),Distribution,Nitro,100.00,,,130618,,,,10,,,,,,,0,None,,,40,38.4407773,-81.8422582
+160 Jacobson Dr,,C,Existing,280000,,$8.28 - 9.00 (Est.),Distribution,Poca,100.00,1977,,280000,0.10,"25'0""",36-40'w x 29-30'd,29,480-1600a 3p,,,,,,0,"1/8'0""w x 8'0""h",Yes,,30,38.4540330,-81.8185250
+Main St,Central Machine Shop,B,Existing,101379,,$5.45 - 6.66 (Est.),Warehouse,Weirton,100.00,1981,,50690,1.48,"43'0""",48'w x 25'd,1,2500-5000a/480v 3p,,,,,,0,"5/16'0""w x 20'0""h",None,,150,40.4217684,-80.5938584
+3 McJunkin Rd,Former MRC Warehouse,B,Existing,146000,,$7.18 - 8.77 (Est.),Warehouse,Nitro,100.00,1970,,120400,0.00,"20'0""",,14,3p,,City,2025 Tax @ $0.1901/sf,,,0,5,Wet,City,,38.4388582,-81.8362230
+4 McJunkin Rd,,C,Existing,140000,,$6.46 - 7.89 (Est.),Warehouse,Nitro,100.00,1970,,140000,0.00,"20'0""",,,,,City,2025 Tax @ $0.1901/sf,,,0,5,Wet,City,,38.4384403,-81.8353025
+6 McJunkin Rd,Allied Logistics Bldg #17,B,Existing,386000,250,$8.31 - 10.16 (Est.),Distribution,Nitro,99.94,1973,1975,386000,0.10,"19'6""",54'w x 40'd,8,1200a/480v 3p,,Yes,2025 Tax @ $0.2488/sf,,250,250,2,Wet,Yes,40,38.4391127,-81.8377659
+621 Mid Atlantic Pky,,B,Existing,191068,,$6.55 - 8.00 (Est.),Warehouse,Martinsburg,100.00,1987,,191068,0.10,"40'0""",,20,1600a,,,,,,0,,ESFR,,20,39.4982793,-77.9531285
+254 Novak Dr,,B,Existing,120000,96000,$8.22 - 10.05 (Est.),Warehouse,Martinsburg,20.00,2025,,120000,,,,,,,,,,96000,96000,,,,,39.3946585,-77.9998630
+748 Novak Dr,,A,Existing,273634,186673,$8.41 - 10.27 (Est.),Distribution,Martinsburg,35.00,1998,2021,273634,0.71,"30'0""",48'w x 42'd,10,,,Yes,,,186673,177866,"1/12'0""w x 14'0""h",ESFR,Yes,194,39.3918997,-77.9892746
+225 Oak Dr,Kellwood Building,C,Existing,126515,,$2.19 - 2.67 (Est.),Distribution,Spencer,100.00,1958,2007,126515,0.59,"18'0""",30'w x 30'd,2,3p,,Yes,,,,0,3,Wet,Yes,75,38.8174250,-81.3601130
+491 Park Dr,,B,Existing,378500,,$5.31 - 6.49 (Est.),Distribution,Weirton,100.00,1999,2012,378500,0.61,"28'0""",,27,Heavy,,,,,,0,"1/14'0""w",Wet,City,230,40.3878615,-80.5521208
+24 Phillips Ln,,C,Existing,271967,,$8.19 - 10.01 (Est.),Warehouse,Fairmont,100.00,1943,,271967,,"25'0""",25'w x 25'd,8,,,,2025 Tax @ $0.0936/sf,,,0,"2/12'0""w x 12'0""h",None,,,39.5032099,-80.1236843
+163 Pitman Rd,,B,Existing,112192,,$7.46 - 9.12 (Est.),Distribution,Morgantown,100.00,2013,,112192,,"23'0""",,28,,,,2025 Tax @ $2.1208/sf,,,0,4,Yes,,,39.6251714,-80.0033469
+502 Plant Rd,,C,Existing,221587,,$7.69 - 9.40 (Est.),Distribution,Nitro,100.00,,,221587,,,,,,,,,,,0,"4/15'0""w x 18'0""h",,,10,38.4307730,-81.8419150
+351 Ragland Rd,,C,Existing,120000,,$7.99 - 9.77 (Est.),Warehouse,Beckley,100.00,1972,1983,120000,0.33,"45'9""",,5,1600a/277-480v,,Yes,2025 Tax @ $0.1936/sf,,,0,"5/10'0""w x 12'0""h",Yes,Yes,40,37.8106780,-81.1782260
+3180 Rosemar Rd,Allied Logistics Bldg #24,B,Existing,385000,,$10.51 - 12.84 (Est.),Warehouse,Parkersburg,100.00,1992,,385000,0.05,"29'6""",50'w,17,480v 3p,,Septic Field,2025 Tax @ $0.1351/sf,,,0,"1/12'0""w x 14'0""h",,City,20,39.3357143,-81.5185539
+Rt. 892,,B,Existing,145000,,$8.30 - 10.15 (Est.),Warehouse,Washington,100.00,1957,,145000,1.67,,,,,,,2025 Tax @ $0.3742/sf,,,0,,,,40,39.2521366,-81.6874408
+1 Ruskin Dr,,C,Existing,180000,,$8.30 - 10.15 (Est.),Warehouse,Fairmont,100.00,,,180000,0.27,"29'3""",,10,,,,2025 Tax @ $0.3186/sf,,,0,"8/10'0""w x 12'0""h",,,50,39.4455716,-80.1575232
+219 N Seneca Trl,,C,Existing,256017,,$4.11 - 5.02 (Est.),Warehouse,Ronceverte,100.00,1940,,256017,,,,,,,,2025 Tax @ $0.2948/sf,,,0,None,,,100,37.7754666,-80.4606351
+250 Staunton Ave,,C,Existing,184717,,$10.71 - 13.09 (Est.),Warehouse,Parkersburg,100.00,1920,,184717,0.27,,,2,,,,2025 Tax @ $0.0987/sf,,,0,"2/12'0""w x 15'0""h",,,50,39.2572460,-81.5342400
+1624A Staunton Ave,,B,Existing,283928,,$10.64 - 13.01 (Est.),Warehouse,Parkersburg,100.00,,,283928,,,,4,,,,2025 Tax @ $0.0010/sf,,,0,"1/10'0""w x 12'0""h",,,40,39.2598285,-81.5383360
+243 Three Springs Dr,,C,Existing,102600,,$5.31 - 6.49 (Est.),Warehouse,Weirton,100.00,2005,,102600,,,,,,,,2025 Tax @ $0.8245/sf,,,0,,,,,40.3986904,-80.5468124
+230 Truxmore Ct,Truxmore,C,Existing,160491,,$8.30 - 10.15 (Est.),Warehouse,Inwood,100.00,1965,,30000,0.00,"24'0""",50'w x 25'd,5,,,,2025 Tax @ $0.0685/sf,,,0,"1/12'0""w x 12'0""h",Yes,,,39.3579668,-78.0456444
+Tucker Creek Rd,,C,Existing,157443,,$2.36 - 2.88 (Est.),Warehouse,Elizabeth,100.00,1962,1995,157443,,"22'0""",,4,3400a/440v 3p,,,2024 Tax @ $0.0621/sf,,,0,17,None,City,100,39.0649054,-81.4080200
+188 Van Kirk Dr,,C,Existing,192400,,$7.33 - 8.96 (Est.),Warehouse,Fairmont,100.00,1990,,192400,0.36,"33'0""",25'w x 40'd,7,3p,,,2025 Tax @ $0.5139/sf,,,0,"1/12'0""w x 16'0""h",Dry,,70,39.4326459,-80.2078012
+91 Variform Dr,,B,Existing,151813,,$7.47 - 9.13 (Est.),Warehouse,Martinsburg,100.00,1986,,151813,0.64,,,15,,Unknown,,2025 Tax @ $0.2602/sf,,,0,1,,,93,39.4334519,-77.9607482
+2575 Virginia Ave,USFS Industrial Distribution,B,Existing,137337,,$7.98 - 9.76 (Est.),Distribution,Hurricane,100.00,1969,1988,137337,0.36,,,,,,,,,,0,,,,50,38.4315730,-82.0302090
+5115 Winchester Ave,Building B,A,Existing,365400,,$7.47 - 9.13 (Est.),Warehouse,Martinsburg,100.00,2023,,365400,1.15,"40'0""",56'w x 52'd,76,4000a/277-480v 3p,,,,,,0,"2/12'0""w x 14'0""h",ESFR,,420,39.3893578,-78.0063889
+5550 Winchester Ave,Berkeley Business Park,B,Existing,389244,,$5.84 - 7.14 (Est.),Warehouse,Martinsburg,100.00,1959,2005,389244,1.03,"24'0""",24'w x 40'd,26,440a 3p,,Yes,,,,0,3,Wet,Yes,400,39.3865973,-78.0165725
+5694 Winchester Ave,,A,Existing,404657,,$7.47 - 9.13 (Est.),Warehouse,Martinsburg,100.00,2020,,404040,0.51,"32'0""",52'w x 50'd,41,3p,,,2025 Tax @ $1.0159/sf,,,0,"2/10'0""w x 16'0""h",ESFR,,208,39.3844113,-78.0212144
+0A Wv-68,,C,Existing,118201,,$5.23 - 6.40 (Est.),Warehouse,Ravenswood,100.00,,,118201,,,,,,,,2025 Tax @ $0.4313/sf,,,0,None,,,50,38.9413000,-81.7562440
+608 Caperton Blvd,,B,Existing,404960,,$7.47 - 9.13 (Est.),Distribution,Martinsburg,100.00,2001,,404960,0.63,,,32,,,,2025 Tax @ $0.7225/sf,,,0,5,,,255,39.5091978,-77.9555263
+390 Industrial Park Rd,,C,Existing,334484,,$4.21 - 5.14 (Est.),Warehouse,Moorefield,100.00,,,334484,,,,,,,,,,,0,,,,527,39.0744630,-78.9429080
+1900 Jack Burlingame Rd,,B,Existing,180000,,$5.23 - 6.40 (Est.),Distribution,Millwood,100.00,2016,,180000,0.40,,,,,,,2025 Tax @ $0.5900/sf,,,0,,,,73,38.9018504,-81.8341536
+McMechen St,,C,Existing,185000,,$5.68 (Est.),Warehouse,Benwood,100.00,1970,,185000,,,,2,,,,2025 Tax @ $0.0614/sf,,,0,8,,,,40.0224645,-80.7314962
+8 McMechen St,Excalibur Building,C,Existing,185086,,$5.29 - 6.46 (Est.),Warehouse,Benwood,100.00,1930,,,,"50'0""",,,,,,2025 Tax @ $0.0614/sf,,,0,4,,,,40.0216343,-80.7331000
+748 McMechen St,,C,Existing,183747,,$5.80 (Est.),Warehouse,Benwood,100.00,2012,,183747,,,,,,,,2025 Tax @ $0.3932/sf,,,0,,,,,40.0091071,-80.7362866
+7850 Ohio River Rd,,B,Existing,112000,,$6.26 - 7.65 (Est.),Warehouse,Lesage,100.00,,,112000,,,,,,,,2025 Tax @ $0.3148/sf,,,0,,,,,38.5573934,-82.2843977
+230 Polymer Way,,C,Existing,291269,,$7.71 - 9.42 (Est.),Warehouse,Davisville,100.00,1974,,291269,,,,,,,,,,,0,,,,,39.1990406,-81.4893917
+6000 Rail St,,B,Existing,330000,,$7.46 - 9.12 (Est.),Distribution,Morgantown,100.00,2024,,330000,,,,,,,,,,,0,3,,,,39.5981191,-79.9824373
+141 Summers St,,B,Existing,191068,,$7.38 - 9.02 (Est.),Warehouse,Charleston,100.00,,,191068,,,,,,,,2024 Tax @ $0.0055/sf,,,0,,,,,38.3511150,-81.6354979
+541 Technology Dr,,B,Existing,168400,,$5.05 - 6.18 (Est.),Warehouse,Triadelphia,100.00,1994,,168400,,,,,,,,2025 Tax @ $0.2997/sf,,,0,,,,,40.0716415,-80.5605516
+801 Turnpike Industrial Rd,,B,Existing,180000,,$7.99 - 9.77 (Est.),Warehouse,Princeton,100.00,,,180000,,,,,,,,2025 Tax @ $0.3440/sf,,,0,,,,,37.3719427,-81.0430212
+598 Waxler Rd,,C,Existing,279000,,$9.22 - 11.27 (Est.),Warehouse,Keyser,100.00,,,,,,,,,,,,,,0,,,,,39.4475560,-78.9538740

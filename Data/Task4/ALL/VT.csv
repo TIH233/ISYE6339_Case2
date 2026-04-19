@@ -1,0 +1,28 @@
+Property Address,Property Name,Building Class,Building Status,RBA,Total Available Space (SF),Rent/SF/Yr,Secondary Type,City,Percent Leased,Year Built,Year Renovated,Typical Floor Size,Parking Ratio,Ceiling Ht,Column Spacing,Number Of Loading Docks,Power,Rail Lines,Sewer,Building Operating Expenses,Capacity - Available kW,Direct Available Space,Direct Vacant Space,Drive Ins,Sprinklers,Water,Number Of Parking Spaces,Latitude,Longitude
+401 Gage St,,B,Existing,103444,75000,$8.00,Warehouse,Bennington,27.50,1980,,103444,,,,2,,,,2024 Tax @ $1.1194/sf,,75000,75000,2,Yes,,,42.8808325,-73.1906984
+6653 Shelburne Rd,,B,Existing,120000,120000,$10.00,Warehouse,Shelburne,0.00,2000,,120000,0.22,"32'0""",50'w,9,1600a 3p,,County,,,120000,120000,"1/10'0""w",ESFR,County,26,44.3625250,-73.2308800
+1030 Water St,,C,Existing,125000,50000,$4.00,Warehouse,North Bennington,60.00,1967,,125000,0.40,"16'0""",,5,,,,,,50000,50000,None,Dry,,50,42.9145149,-73.2461448
+3442 US Route 22A,,B,Existing,113000,,$5.51 - 6.73 (Est.),Distribution,Shoreham,100.00,1937,,113000,0.00,,,,,,,,,,0,,,,,43.8919189,-73.3101679
+372 Vermont Route 67 E,,B,Existing,196000,196000,$4.50,Distribution,Shaftsbury,0.00,1972,,196000,0.12,"18'0""",,4,480v 3p,,,,,196000,196000,15,Wet,,24,42.9471830,-73.2167180
+42 Allen Martin Dr,,B,Existing,372500,,$9.41 - 11.50 (Est.),Distribution,Essex Junction,100.00,2014,,372500,,,,,,,,2024 Tax @ $1.1528/sf,,,0,,,,,44.4982891,-73.0467627
+160 Benmont Ave,,B,Existing,160782,,$8.19 - 10.01 (Est.),Warehouse,Bennington,100.00,1865,,32156,0.47,"16'0""",,2,,,City,2024 Tax @ $0.6203/sf,,,0,,,City,76,42.8842029,-73.2026002
+160 Boyer Cir,,C,Existing,100000,,$10.50 - 12.83 (Est.),Warehouse,Williston,100.00,2001,,100000,0.30,,,10,,,,,,,0,None,Wet,,30,44.4463320,-73.1336530
+3046 Case St,,F,Existing,107000,,$7.31 - 8.93 (Est.),Warehouse,Middlebury,100.00,1989,,107000,,,,,,,,2024 Tax @ $0.1734/sf,,,0,Yes,,,,44.0155328,-73.1004565
+7 Everett Ln,,C,Existing,250000,,$5.82 - 7.11 (Est.),Warehouse,Windsor,100.00,1916,,72500,0.69,"40'0""",,2,,,City,,,,0,5,Wet,City,100,43.4828362,-72.3837403
+327 Holly Ct,,C,Existing,164000,,$10.08 - 12.32 (Est.),Distribution,Williston,100.00,1995,,164000,1.09,"26'0""",,4,120a/208v,,,,,,0,Yes,Yes,,180,44.4544713,-73.1277022
+20 Karen Dr,Pepsi-Cola Bottling Co of Burlington,B,Existing,100000,,$10.26 - 12.55 (Est.),Warehouse,South Burlington,100.00,1984,,81196,,,,,,,,2024 Tax @ $1.2146/sf,,,0,,,,,44.4207952,-73.2081567
+67 Kathan Meadow Rd,,B,Existing,115000,115000,$8.74 - 10.68 (Est.),Warehouse,East Dummerston,0.00,1980,,115000,0.27,,,,2000a 3p,,Yes,2024 Tax @ $0.3001/sf,,115000,115000,,Wet,Yes,31,42.9625470,-72.5214680
+21 Lower Newton St,,C,Existing,184000,,$4.12 - 5.03 (Est.),Distribution,Saint Albans,100.00,1960,,184000,,"24'0""",42'w,10,2000a 3p,,City,2024 Tax @ $0.0647/sf,,,0,2,Dry,City,30,44.8221700,-73.0839299
+685 Marshall Ave,,C,Existing,100695,,$10.23 - 12.50 (Est.),Distribution,Williston,100.00,1998,,100695,0.88,"30'0""",,12,3p,,,,,,0,3,ESFR,,89,44.4429280,-73.1258345
+601 Old River Rd,,B,Existing,227743,150000,$4.97 - 6.07 (Est.),Warehouse,White River Junction,34.14,1957,1968,227743,0.00,,,29,,,,2024 Tax @ $0.3128/sf,,150000,150000,,,,,43.6629713,-72.3529003
+92 Park St,,C,Existing,220000,,$8.19 - 10.01 (Est.),Warehouse,Rutland,100.00,1954,1996,110000,1.13,"16'0""",,5,480v 3p,,,,,,0,Yes,,,240,43.5922500,-72.9784120
+210 Riverside Dr,,B,Existing,310000,180000,$8.74 - 10.69 (Est.),Warehouse,Brattleboro,41.94,1960,2009,310000,0.32,"35'0""",,10,,,Yes,2024 Tax @ $0.1982/sf,,180000,180000,7,Wet,Yes,100,42.8375287,-72.5481841
+1007 Route 346,,C,Existing,120000,,$7.55 - 9.22 (Est.),Warehouse,Pownal,100.00,1948,,,,,,,,,,2024 Tax @ $0.1434/sf,,,0,,,,,42.7748383,-73.2420092
+155 Seward Rd,Rutland Mfg & Distribution Warehouse,B,Existing,123512,,$8.19 - 10.01 (Est.),Warehouse,Rutland Town,100.00,1980,,61756,1.21,"24'1""",,11,1200a/277-480v 3p,,County,,,,0,3,Wet,County,150,43.5865893,-72.9646956
+90 Technology Dr,,B,Existing,165611,,$7.80 - 9.53 (Est.),Distribution,Brattleboro,100.00,1999,2001,165611,1.82,"40'0""",36'w x 40'd,21,1200-1600a/277-480v 3p 4w,,City,2024 Tax @ $1.1857/sf,,,0,2,Wet,City,302,42.8749037,-72.5656035
+67 Tubbs Ave,,C,Existing,133000,,$5.66 - 6.91 (Est.),Distribution,Brandon,100.00,1997,,133000,,"20'0""",,8,4000a/265-460v,,City,2024 Tax @ $0.2546/sf,,,0,2,Yes,City,,43.8161632,-73.1123902
+62 Vermont Castings Way,,C,Existing,159000,,$4.33 - 5.29 (Est.),Warehouse,Bethel,100.00,1976,,159000,,"18'0""",,5,,,,2024 Tax @ $0.2279/sf,,,0,1,,,,43.8248460,-72.6203106
+257 Clinton St,,C,Existing,157500,,$8.20 - 10.03 (Est.),Warehouse,Springfield,100.00,1941,1963,157500,,"23'0""",,1,2000a/480v 3p 4w,,City,2024 Tax @ $0.0641/sf,,,0,"3/12'0""w x 14'0""h",Wet,City,,43.2866000,-72.4717200
+635 Community Dr,,A,Existing,143794,,$10.08 - 12.32 (Est.),Distribution,South Burlington,100.00,2020,,,,,,34,,,,2024 Tax @ $2.8145/sf,,,0,None,,,,44.4461129,-73.1403659
+5 New England Dr,,B,Existing,128951,,$10.16 - 12.42 (Est.),Warehouse,Essex Junction,100.00,1996,,128951,,,,,,,,2024 Tax @ $0.7778/sf,,,0,,,,,44.5130994,-73.1372294
+161 Wellington Rd,,B,Existing,183736,,$8.86 - 10.82 (Est.),Warehouse,Brattleboro,100.00,1975,,91868,0.44,,,,,,,2024 Tax @ $0.8129/sf,,,0,,,,80,42.8878890,-72.5472180

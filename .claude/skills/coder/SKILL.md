@@ -17,41 +17,138 @@ This skill governs how every computational task (Tasks 3–9) is built in this p
 The goal is a pipeline that is mathematically transparent, computationally efficient,
 fault-tolerant, and cleanly version-controlled. Follow the sections below in order.
 
+The coder is an **executor**, not a planner. The plan lives in `Doc/Task.md` — written
+by a planner upstream. The coder reads that plan, pulls the matching reference methodology,
+and implements exactly what was specified.
+
 ---
 
-## Step 0 — Load context before writing a single line
+## Bundled scripts
 
-Run the `retriever` skill to fetch the relevant Task.md block and any data schemas you'll
-touch. This is not optional — writing code against a schema you haven't confirmed wastes
-a full debug cycle.
+Two deterministic workflows are packaged as shell scripts in `scripts/` so they run
+identically every time regardless of who (or what) invokes the coder.
+
+| Script | Purpose | When to run |
+|--------|---------|-------------|
+| `scripts/preflight.sh` | Pull task status, reference methodology, and data schemas | **Before** writing any code (Step 0) |
+| `scripts/gate.sh` | Commit or rollback at the end of a subtask | **After** sanity checks (Step 6) |
+
+Both scripts live at `.claude/skills/coder/scripts/` and are self-documented via `--help`
+or by reading the header comments.
+
+---
+
+## Step 0 — Preflight: retrieve task context
+
+**Do not write a single line of code before completing this step.**
+
+Run the preflight script from the project root. It invokes the retriever patterns
+(the same `awk` extractions defined in the `retriever` skill) against all three
+knowledge bases in one shot:
 
 ```bash
-# Get the task description
-awk '/^### Task N/{flag=1; print; next} /^###/{if(flag) exit} flag' Doc/Task.md
-
-# Get schemas for each input file you'll load
-awk '/^## .*FILENAME/{flag=1; print; next} /^#/{if(flag) exit} flag' Doc/Data.md
+.claude/skills/coder/scripts/preflight.sh <TASK_NUMBER> [data_file1 data_file2 ...]
 ```
 
-Confirm: task objective, expected outputs, input file paths and column names.
-Do not proceed until you can answer: *what does this subtask produce and how do I verify it?*
+Example for Task 3, which depends on `raw.parquet`:
+```bash
+.claude/skills/coder/scripts/preflight.sh 3 raw.parquet
+```
+
+The script prints three blocks:
+
+1. **Task Status & Plan** — the full task block from `Doc/Task.md`, including the
+   status tag and any methodology already documented by the planner.
+2. **Data Schemas** — column names, types, and context for every input file you listed.
+
+### Status tags and their meaning
+
+Tags come in two flavors — **top-level task** tags and **subtask** tags.
+
+**Top-level task tags** (apply to `### Task N` headers):
+
+| Tag | Meaning |
+|-----|---------|
+| `[not started]` | No plan or code yet. Nothing to build on. |
+| `[in process]` | Currently active task — code is being written. |
+| `[complete]` | Fully implemented, reviewed, and outputs committed. |
+
+**Subtask tags** (apply to `#### Task N.M` and `##### Task N.M.P` headers):
+
+| Tag | Meaning |
+|-----|---------|
+| `[planning]` | Step-by-step plan written in `Doc/Task.md`; no code yet. |
+| `[editing]` | Plan exists and code is actively being written in the notebook. |
+| `[complete]` | Subtask code written, sanity checks passed, outputs committed. |
+
+### Decision after preflight
+
+| Status tag | Action |
+|------------|--------|
+| `[not started]` | No plan exists. Do not implement — ask the planner to document the plan in `Doc/Task.md` first. |
+| `[planning]` | Plan exists in `Doc/Task.md`. Read it fully, then proceed to Step 0.5. |
+| `[editing]` | In-progress subtask. Open the notebook, read existing cells, then continue from where it stopped. |
+| `[in process]` | Active top-level task. Check each subtask tag to find the next `[planning]` subtask. |
+| `[complete]` | Nothing to do unless the user explicitly asks for changes. |
 
 ---
 
-## Step 1 — Notebook structure
+## Step 0.5 — Scope Lock
 
-Each task lives in its own notebook: `Task<N>/task<N>_notebook.ipynb`
+The user's message tells you **exactly** what to implement. Parse it literally.
 
-Open the notebook (or create it) and use this cell-level pattern throughout:
+1. **Read the plan** from `Doc/Task.md` for the targeted subtask. Use the retriever awk pattern:
+   ```bash
+   awk '/^##### .*QUERY/{flag=1; print; next} /^##/{if(flag) exit} flag' Doc/Task.md
+   ```
+   If the subtask tag is `[planning]`, the full step list is there — implement it exactly as written.
+   If the subtask tag is `[editing]`, open the notebook and read existing cells before continuing.
+
+2. **Extract scope** from the user's request — which task, which subtask(s), what specifically to build.
+3. **Print a scope declaration** before writing any code:
 
 ```
-[Markdown cell]  ← Theory: LaTeX equations, constraints, variable definitions
-[Code cell]      ← Implementation: one logical operation
-[Code cell]      ← Sanity check: assert bounds, print shape/stats
+SCOPE LOCK
+──────────────────────────────────
+Task:      Task 3 — Region Clustering
+Subtasks:  K-means clustering + contiguity post-processing
+Create:    Task3/task3_notebook.ipynb, Data/Task3/
+Modify:    (none)
+Will NOT touch: anything else
+──────────────────────────────────
+Confirm? (y/n)
 ```
 
-The Markdown cell bridges theory to code. Write the governing equation or constraint
-before you implement it, e.g.:
+3. Wait for explicit `y` before proceeding to Step 1.
+
+**Rules:**
+- If the request is ambiguous (e.g. "work on Task 5" when Task 5 has multiple parts),
+  ask which part in conversation before printing the scope declaration.
+- Never expand scope mid-implementation. No "while I'm here" additions.
+- If you discover a prerequisite is missing during coding (e.g. Task 4 needs Task 3
+  output that doesn't exist), stop and report — do not silently implement the prerequisite.
+
+---
+
+## Step1 Developer Suggestions: Architecture & Workflow
+
+### subStep 1.1 — Task Tracking
+When starting a new task, I suggest updating the subtask's status tag in `Doc/Task.md` from `[planning]` to `[editing]` directly in the header. This signals that implementation is active and helps prevent redundant work if multiple agents are involved.
+
+### subStep 1.2 — Modular Design (The Calling Chain)
+Rather than writing an entire monolithic script inside a single notebook, consider adopting a modular design. Treat the `.ipynb` files as the presentation and orchestration layer, while keeping the complex implementation logic in separate `.py` modules (e.g., inside a `lib/` or `src/` directory).
+
+### subStep 1.3 — Notebook Orchestration
+Each task can still live in its own notebook (`Task<N>/task<N>_notebook.ipynb`), but the notebook should primarily be used to import, execute, and validate the code.
+
+Try to use this cell-level pattern throughout the notebook to bridge theory and code:
+
+* `[Markdown cell]` ← Theory: LaTeX equations, mathematical constraints, variable definitions.
+* `[Code cell]` ← Import & Execute: Import the relevant function from your `.py` module and call it.
+* `[Code cell]` ← Sanity check: Assert bounds, check shapes, or print summary stats.
+
+**Example Implementation:**
+Write the governing equation in Markdown before executing the imported function:
 
 ```markdown
 ## 3.2 — Demand-weighted centroid
@@ -59,9 +156,6 @@ The cluster centroid $c_k$ is the tonnage-weighted mean of county centroids:
 $$c_k = \frac{\sum_{i \in C_k} d_i \cdot \mathbf{x}_i}{\sum_{i \in C_k} d_i}$$
 where $d_i$ is the 2025 truck tonnage for county $i$ and $\mathbf{x}_i = (\text{lon}_i, \text{lat}_i)$.
 ```
-
-This discipline keeps the notebook a living document, not just a script.
-
 ---
 
 ## Step 2 — Data layer rules
@@ -176,8 +270,10 @@ Use the kernel interpreter: `~/.venvs/general/bin/python3`
 ## Step 6 — Milestone gate: commit or rollback
 
 At the end of each logical subtask (after sanity checks pass), stop and present a summary.
+Use the gate script for the mechanical parts; keep the decision with the user.
 
-**On success** — present to user:
+### On success — present to user:
+
 ```
 Subtask complete: [description]
 Outputs saved: [list of files]
@@ -187,15 +283,23 @@ Proceed with commit? (y/n)
 ```
 
 Wait for explicit `y` before committing. Then:
+1. Update the subtask's status tag in `Doc/Task.md` from `[editing]` to `[complete]` (edit the header line directly).
+2. If all subtasks under a top-level task are `[complete]`, update the top-level task tag to `[complete]` as well.
+3. Run:
 ```bash
-./git_tools.sh sync "Task N — [subtask description]"
+.claude/skills/coder/scripts/gate.sh commit "Task N — [subtask description]"
 ```
 
-**On sanity check failure** — do NOT try to patch it forward:
+### On sanity check failure — do NOT try to patch it forward:
 
-1. Run the rollback:
+First inspect what changed:
 ```bash
-git reset --hard HEAD
+.claude/skills/coder/scripts/gate.sh status
+```
+
+Then rollback:
+```bash
+.claude/skills/coder/scripts/gate.sh rollback
 ```
 
 2. Write `Issue_Report.md` in the project root:

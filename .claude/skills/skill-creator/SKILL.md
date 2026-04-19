@@ -18,7 +18,7 @@ At a high level, the process of creating a skill goes like this:
   - While the runs happen in the background, draft some quantitative evals if there aren't any (if there are some, you can either use as is or modify if you feel something needs to change about them). Then explain them to the user (or if they already existed, explain the ones that already exist)
   - Use the `eval-viewer/generate_review.py` script to show the user the results for them to look at, and also let them look at the quantitative metrics
 - Rewrite the skill based on feedback from the user's evaluation of the results (and also if there are any glaring flaws that become apparent from the quantitative benchmarks)
-- qualitatively ensure the nature of the skill aligns with user's suggestions in .claude/skills/skill-creator/references/User.md
+- Qualitatively ensure the nature of the skill aligns with the user's original notes in `references/User.md` when that file exists. If it does not exist, collect the same information inline in the conversation and note that the original reference file was absent.
 - Repeat until you're satisfied
 - Expand the test set and try again at larger scale
 
@@ -38,6 +38,43 @@ Cool? Cool.
 
 - for example, 'json' as a commonly used, cross-disciplinary term is ok, and "EM algorithm" as in statistics and "ABC inventory control" is in user's expertise so is also ok, but "web socket", "decorator" might be hard to understand and require explanations without asking.
 
+## User Review And Iteration Contract
+
+This section defines the state machine for the collaboration loop. Follow it explicitly so the user always knows what they are expected to provide and when Claude should pause.
+
+### User input channels
+
+The user can provide skill requirements through three channels. Use them in this order of precedence:
+
+1. The current conversation: latest clarifications, corrections, approval, and scope changes.
+2. `references/User.md`: the original reference note for the skill, if present. Treat this as the durable statement of the user's baseline intent. Do not silently overwrite or reinterpret it without mentioning any mismatch.
+3. `feedback.json`: per-eval review comments after the user inspects outputs.
+
+If `references/User.md` is missing, say so briefly and continue by collecting the same information in chat. Do not block the workflow on the missing file.
+
+### What the user fills in, and where
+
+- In the conversation: the skill goal, trigger situations, expected output shape, edge cases, examples, and whether to run evals.
+- In `references/User.md` if available: longer-lived intent that should survive across iterations, such as original workflow, preferred terminology, prohibited behavior, and design constraints.
+- In the review UI's feedback boxes, exported as `feedback.json`: iteration-specific comments on each output, what is wrong, what is acceptable, and what should change next.
+
+### Conversation states
+
+Move through these states in order:
+
+1. `intake`
+   Collect missing requirements from the conversation and `references/User.md` if it exists. You may ask focused questions here.
+2. `draft_and_run`
+   Write or revise the skill, define eval prompts, and run the evaluations. During this state, you may edit files and run commands needed to prepare the review artifacts.
+3. `handoff_for_review`
+   Launch the review UI or present the outputs inline, explain exactly what the user should review, and tell them where to leave feedback.
+4. `waiting_for_user`
+   Stop editing the skill and stop making speculative improvements. Do not continue the iteration until the user replies, updates `feedback.json`, or provides more context in chat. Only perform minimal follow-up actions directly tied to the handoff, such as reading the downloaded feedback file once the user says they are done.
+5. `improve_next_iteration`
+   Read the user's feedback, compare it with the original reference intent, apply changes, and begin the next loop.
+
+The important boundary is between `handoff_for_review` and `waiting_for_user`: once results are presented for review, Claude should not keep changing the skill in the same iteration. The next edit begins only after new user input arrives.
+
 ---
 
 ## Creating a skill
@@ -46,7 +83,7 @@ Cool? Cool.
 
 Start by understanding the user's intent. The current conversation might already contain a workflow the user wants to capture (e.g., they say "turn this into a skill"). If so, extract answers from the conversation history first — the tools used, the sequence of steps, corrections the user made, input/output formats observed. The user may need to fill the gaps, and should confirm before proceeding to the next step.
 
-Aside from above information, read references/User.md and organize, understand user suggestions and understandings on the skill. User.md might composed of user's suggestion on trigger, tasks to be accomplished, workflow, and check if User.md fills the gap.
+Aside from the conversation, read `references/User.md` if it exists and treat it as the original reference note for the skill. It may contain the user's preferred trigger conditions, tasks to accomplish, workflow, terminology, and fixed constraints. If the file does not exist, state that once in the conversation and gather the same information inline instead. If the file exists but appears to belong to a different skill, ignore it and say why.
 
 
 1. What should this skill enable Claude to do?
@@ -251,6 +288,8 @@ Note: please use generate_review.py to create the viewer; there's no need to wri
 
 5. **Tell the user** something like: "I've opened the results in your browser. There are two tabs — 'Outputs' lets you click through each test case and leave feedback, 'Benchmark' shows the quantitative comparison. When you're done, come back here and let me know."
 
+At this point, transition the conversation to `waiting_for_user`. Do not keep editing the skill or changing evals while the user is reviewing. The only work that should continue is non-invasive monitoring required to complete the handoff, or reading the user's submitted feedback after they say they are done.
+
 ### What the user sees in the viewer
 
 The "Outputs" tab shows one test case at a time:
@@ -291,11 +330,13 @@ kill $VIEWER_PID 2>/dev/null
 
 ### Step6: Briefly check user's suggestion
 
-Prior to the creation process, user will comment in .claude/skills/skill-creator/reference/User.md for his understanding of the skill, including but not limited to skills purpose, structure, spefic details to design/ particular instruction to include.
+Before or during the creation process, the user may write notes in `references/User.md` describing their understanding of the skill, including the skill's purpose, structure, desired design details, and particular instructions to include. Treat this file as the original user reference when it exists.
 
-**If the current header of the sections in User.md does not match the skill to be created, ignore it**
+**If `references/User.md` is missing, do not block. Ask for the same information in chat or continue with what is already known.**
 
-At this point, since most of the iteration has been finished, you will need to align with user's prior expectations. However, you will not treat it as first references but rather what you have developed so far. You can do minor changes to the skill if the user mentioned and there is no significant conflict  between you and user's suggestion. The logic is if there are misalignment, reflect that, and user will further comment in the feedback.json. 
+**If the current header or contents of `references/User.md` do not match the skill being created, ignore that file for this task and say so explicitly.**
+
+At this point, since most of the iteration has been finished, align the current draft with the user's original reference intent without overreacting to small wording differences. Make minor changes when there is no significant conflict. If there is a real mismatch between the current skill, `references/User.md`, and the latest review feedback, call out the conflict in the conversation and use the next feedback cycle to resolve it.
 
 
 ---
@@ -325,6 +366,8 @@ After improving the skill:
 3. Launch the reviewer with `--previous-workspace` pointing at the previous iteration
 4. Wait for the user to review and tell you they're done
 5. Read the new feedback, improve again, repeat
+
+During step 4, remain in `waiting_for_user`. Do not edit files except to read the submitted review artifacts after the user confirms review is complete.
 
 Keep going until:
 - The user says they're happy

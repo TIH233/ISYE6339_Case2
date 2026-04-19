@@ -1,0 +1,13 @@
+Property Address,Property Name,Building Class,Building Status,RBA,Total Available Space (SF),Rent/SF/Yr,Secondary Type,City,Percent Leased,Year Built,Year Renovated,Typical Floor Size,Parking Ratio,Ceiling Ht,Column Spacing,Number Of Loading Docks,Power,Rail Lines,Sewer,Building Operating Expenses,Capacity - Available kW,Direct Available Space,Direct Vacant Space,Drive Ins,Sprinklers,Water,Number Of Parking Spaces,Latitude,Longitude
+3300-3350 New York Ave NE,,C,Existing,100445,9303,$17.50,Warehouse,Washington,90.74,1959,,100445,0.60,"18'0""",50'w,16,850a 3p,Conrail,City,2025 Tax @ $1.3820/sf,,9303,9303,"4/12'0""w x 10'0""h",Yes,City,60,38.9173010,-76.9602800
+6500-6527 Chillum Pl NW,,C,Existing,147216,45937,$12.71 - 15.53 (Est.),Warehouse,Washington,68.80,1955,2018,80597,2.48,"18'0""",,16,Heavy,,City,2025 Tax @ $1.4097/sf,,45937,45937,4,Wet,City,400,38.9685913,-77.0122811
+3015-3055 V St NE,,C,Existing,100120,46750,$11.73 - 14.34 (Est.),Warehouse,Washington,100.00,1958,,100120,,"18'0""",,15,,Conrail,City,2025 Tax @ $1.6917/sf,,46750,0,8,Wet,City,,38.9184220,-76.9651090
+1845 4th St NE,Verizon,C,Existing,162514,,$13.59 - 16.61 (Est.),Warehouse,Washington,100.00,1925,,40628,0.06,"15'0""",,6,,,City,2025 Tax @ $2.8441/sf,,,0,None,Yes,City,,38.9149570,-77.0001790
+4900 6th St NE,Capital Area Food Bank,B,Existing,121608,,$13.35 - 16.31 (Est.),Warehouse,Washington,100.00,2011,,121608,,,,10,,,,,,,0,4,,,,38.9477200,-76.9999130
+1501 Eckington Pl NE,FedEx,C,Existing,200000,,$13.10 - 16.02 (Est.),Warehouse,Washington,100.00,1989,,200000,,"16'0""",,,,,,2025 Tax @ $8.5876/sf,,,0,8,,,,38.9098940,-77.0038400
+2225-2301 Lawrence Ave,,C,Existing,128000,,$13.62 - 16.64 (Est.),Warehouse,Washington,100.00,1942,,32000,,,,8,1a/1v,,,,,,0,,,,,38.9196376,-76.9769461
+501 M St SE,Building 202,C,Existing,215000,,$12.33 - 15.07 (Est.),Warehouse,Washington,100.00,1941,,35833,,,,,,,,,,,0,,,,,38.8757403,-76.9993025
+2850 New York Ave NE,,C,Existing,132008,,$13.55 - 16.56 (Est.),Warehouse,Washington,100.00,1965,1987,106552,0.76,"24'0""",,10,,,,2025 Tax @ $3.4352/sf,,,0,None,Wet,,100,38.9176371,-76.9656691
+2800 V St NE,,B,Existing,281098,,$13.33 - 16.29 (Est.),Warehouse,Washington,100.00,1951,1995,281098,,"20'0""",25'w x 25'd,34,,Pennsylvania,City,2025 Tax @ $1.3015/sf,,,0,"5/9'0""w x 9'0""h",Wet,City,100,38.9206150,-76.9683970
+3030-3070 V St NE,,C,Existing,106266,,$11.48 - 14.03 (Est.),Warehouse,Washington,100.00,1957,,106266,0.94,"20'0""",,6,,,,2025 Tax @ $3.2007/sf,,,0,None,,,100,38.9192170,-76.9647064
+3300-3390 V St NE,,C,Existing,173677,10000,$13.23 - 16.17 (Est.),Warehouse,Washington,100.00,1959,1998,173677,0.56,"18'0""",,22,,Conrail,City,2025 Tax @ $2.3385/sf,,10000,20180,"9/12'0""w x 12'0""h",Yes,City,98,38.9189813,-76.9592819
