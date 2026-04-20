@@ -288,7 +288,7 @@ Key outputs: filtered H dataframe with d_h^road, Z index pairs, β value.
 
 ---
 
-#### Task 5.2 — Objective Coefficients and Capacity Parameters `[planning]`
+#### Task 5.2 — Objective Coefficients and Capacity Parameters `[complete]`
 
 Pre-compute all MIP coefficients outside the solver loop.
 
