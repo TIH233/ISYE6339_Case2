@@ -51,4 +51,6 @@ The implementation follows a 4-step iterative process based on the Simulated Ann
 ---
 ## 5. Notes for LLM Implementation
 *Data Requirements:* To implement this, the code will require an adjacency matrix/list for all the counties in NE, geographic centroids/shapes for compactness calculations, freight tonnage data per county, and infrastructure overlap data.
+
+*Demand weight:* The county demand weight $W_i$ passed to the SA algorithm is the **external throughput** (hub-facing demand proxy from `county_external_throughput.parquet`): only flows where one endpoint is inside NE and the other is outside. This excludes intra-NE flows that stay within a single final region and do not generate hub demand. Do not use all-flow bidirectional throughput (`county_activity_throughput.parquet`) as the SA demand weight — it double-counts same-region flows and inflates the demand-balance objective. A post-assignment correction (`recompute_region_external_demand.py`) further removes same-final-region flows for fully corrected hub-facing metrics.
 *Graph Theory Application:* Step 3's contiguity check will likely require a fast graph traversal algorithm (like Depth-First Search or Breadth-First Search) on the subgraph of the losing region to ensure it remains connected after a border county is removed.

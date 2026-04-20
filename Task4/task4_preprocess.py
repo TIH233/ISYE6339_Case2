@@ -23,7 +23,7 @@ FIGURE_DIR = PROJECT_ROOT / "Data" / "Task4" / "figures"
 COUNTY_LAYER_PATH = PROJECT_ROOT / "Data" / "Task3" / "derived" / "ne_counties_prepared.gpkg"
 REGION_ASSIGNMENT_PATH = PROJECT_ROOT / "Data" / "Task3" / "outputs" / "region_assignment.csv"
 
-MIN_REGIONAL_AVAILABLE_SF = 20_000
+MIN_REGIONAL_RBA_SF = 200_000
 
 
 RENAME_MAP = {
@@ -61,48 +61,29 @@ RENAME_MAP = {
 
 
 CAPACITY_LOCATION_COLUMNS = [
+    # Identity & location — required by Task 5 for projection, routing, and reporting
     "candidate_id",
     "source_state",
-    "source_file",
-    "source_row",
     "facility_name",
-    "property_name",
-    "property_address",
     "city",
     "county_fips",
     "county_name",
     "region_id",
     "latitude",
     "longitude",
+    # Facility characteristics — used in Task 5 per-hub characterization
     "secondary_type",
     "building_class",
     "building_status",
+    "year_built",
+    # Capacity — s_h (Task 5 MIP parameter)
+    "usable_available_space_sf",
+    "number_loading_docks",
+    # Task 4 screening flags consumed by Task 5.1 H-construction logic
     "availability_class",
     "is_directly_usable_by_status",
-    "has_listed_available_space",
+    "meets_min_rba_200k",
     "is_primary_regional_hub_candidate",
-    "rba_sf",
-    "usable_available_space_sf",
-    "total_available_space_sf",
-    "direct_available_space_sf",
-    "direct_vacant_space_sf",
-    "meets_min_available_space_20k",
-    "percent_leased",
-    "typical_floor_size_sf",
-    "ceiling_height_raw",
-    "column_spacing",
-    "number_loading_docks",
-    "drive_ins",
-    "rail_lines",
-    "capacity_available_kw",
-    "power",
-    "sprinklers",
-    "water",
-    "sewer",
-    "parking_ratio",
-    "parking_spaces",
-    "year_built",
-    "year_renovated",
 ]
 
 
@@ -215,17 +196,19 @@ def add_availability_tags(df: pd.DataFrame) -> pd.DataFrame:
         default="needs_status_review",
     )
 
+    # s_h for Task 5 MIP: total building capacity = RBA (rentable building area)
+    out["usable_available_space_sf"] = out["rba_sf"].fillna(0)
+    out["meets_min_rba_200k"] = out["usable_available_space_sf"].ge(MIN_REGIONAL_RBA_SF)
+
+    # Keep listed-space fields on df only for summary table reporting (not exported to lean CSVs)
     available_space_cols = [
         "total_available_space_sf",
         "direct_available_space_sf",
         "direct_vacant_space_sf",
     ]
-    out["usable_available_space_sf"] = out[available_space_cols].max(axis=1, skipna=True)
-    out["usable_available_space_sf"] = out["usable_available_space_sf"].fillna(0)
-    out["has_listed_available_space"] = out["usable_available_space_sf"].gt(0)
-    out["meets_min_available_space_20k"] = out["usable_available_space_sf"].ge(
-        MIN_REGIONAL_AVAILABLE_SF
-    )
+    _listed = out[available_space_cols].max(axis=1, skipna=True).fillna(0)
+    out["has_listed_available_space"] = _listed.gt(0)
+    out["meets_min_available_space_20k"] = _listed.ge(20_000)
 
     secondary = out["secondary_type"].fillna("").str.casefold()
     out["is_logistics_related_type"] = secondary.isin(
@@ -249,7 +232,7 @@ def add_availability_tags(df: pd.DataFrame) -> pd.DataFrame:
     out["is_primary_regional_hub_candidate"] = (
         out["is_directly_usable_by_status"]
         & out["is_logistics_related_type"]
-        & out["meets_min_available_space_20k"]
+        & out["meets_min_rba_200k"]
         & out["has_valid_coordinates"]
     )
     return out
@@ -275,6 +258,8 @@ def assign_county_and_region(df: pd.DataFrame) -> pd.DataFrame:
         joined = gpd.sjoin(points, counties, how="left", op="within")
 
     joined = joined.drop(columns=["geometry", "index_right"], errors="ignore")
+    # A point on a shared county boundary can match two polygons; keep the first match.
+    joined = joined[~joined.index.duplicated(keep="first")]
     joined = joined.rename(
         columns={
             "fips": "county_fips",
@@ -291,6 +276,7 @@ def assign_county_and_region(df: pd.DataFrame) -> pd.DataFrame:
                 "county_name": "region_county_name",
                 "state": "region_state",
                 "throughput_ktons": "county_throughput_ktons",
+                "external_throughput_ktons": "county_throughput_ktons",
             }
         )
         joined["county_fips"] = joined["county_fips"].astype("string")
@@ -538,7 +524,7 @@ def write_outputs(df: pd.DataFrame) -> dict[str, Path]:
     reduced.to_csv(reduced_path, index=False)
     outputs["preprocessed_capacity_location"] = reduced_path
 
-    primary = reduced[df["is_primary_regional_hub_candidate"]].copy()
+    primary = reduced[reduced["is_primary_regional_hub_candidate"]].copy()
     primary_path = DERIVED_DIR / "primary_regional_hub_candidates.csv"
     primary.to_csv(primary_path, index=False)
     outputs["primary_regional_hub_candidates"] = primary_path

@@ -268,18 +268,33 @@ Task 3 data is now organized by role instead of a flat folder:
 
 ---
 
-## `county_throughput.parquet` — County-level freight demand weights for clustering
+## `county_activity_throughput.parquet` — All-flow bidirectional endpoint demand (visualization only)
 
-> **path** · `Data/Task3/derived/county_throughput.parquet` · **format** · parquet · **shape** · 3,144 rows × 4 cols
+> **path** · `Data/Task3/derived/county_activity_throughput.parquet` · **format** · parquet · **shape** · 3,144 rows × 4 cols
 
 | Column | Type | Non-null | Meaning |
 | ------ | ---- | -------- | ------- |
 | fips | object | 100% | 5-digit county FIPS code |
 | tons_in | float64 | 100% | Total 2025 inbound freight tonnage to the county (thousand short tons) |
 | tons_out | float64 | 100% | Total 2025 outbound freight tonnage from the county (thousand short tons) |
-| throughput | float64 | 100% | Bidirectional county demand weight: `tons_in + tons_out` |
+| throughput | float64 | 100% | Bidirectional all-flow demand: `tons_in + tons_out` |
 
-**Context**: Core retained Task 3.1 output built from the commodity-filtered Task 1 O-D table. It covers 3,144 counties with positive freight interaction tied to the NE megaregion and serves as the clustering weight table for Task 3.2 onward as well as the joined demand surface behind the heatmap and composite map.
+**Context**: Task 3.1 output covering 3,144 counties with positive freight interaction tied to the NE megaregion. Used as the choropleth color column in `fig_demand_heatmap.png` and as the `throughput` column in `ne_counties_prepared.gpkg`. **Do not use for hub location or capacity decisions** — it double-counts same-region flows. Use `county_external_throughput.parquet` for clustering and hub sizing.
+
+---
+
+## `county_external_throughput.parquet` — NE-boundary hub-facing demand weight
+
+> **path** · `Data/Task3/derived/county_external_throughput.parquet` · **format** · parquet · **shape** · ~434 rows × 4 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| fips | object | 100% | 5-digit county FIPS code (NE megaregion counties only) |
+| ext_in | float64 | 100% | 2025 tonnage entering the county from non-NE origins (thousand short tons) |
+| ext_out | float64 | 100% | 2025 tonnage leaving the county to non-NE destinations (thousand short tons) |
+| external_throughput | float64 | 100% | `ext_in + ext_out` — hub-facing demand proxy |
+
+**Context**: Task 3.1 output computed from the commodity-filtered O-D table using only rows where one endpoint is inside the NE megaregion and the other is outside. This is the pre-assignment approximation of hub-facing demand used as `demand_weight` in Task 3.2 SA clustering. Intra-NE flows are excluded because they remain within some final region and do not generate inter-region hub demand. A post-assignment correction (`recompute_region_external_demand.py`) further removes same-final-region flows to produce `region_external_metrics.csv`.
 
 ---
 
@@ -294,12 +309,12 @@ Task 3 data is now organized by role instead of a flat folder:
 | STUSPS | object | 100% | State postal abbreviation |
 | tons_in | float64 | 100% | Total inbound 2025 freight tonnage (thousand short tons) |
 | tons_out | float64 | 100% | Total outbound 2025 freight tonnage (thousand short tons) |
-| throughput | float64 | 100% | Bidirectional demand weight used by clustering |
+| throughput | float64 | 100% | All-flow bidirectional demand (activity throughput) — visualization reference column only; **not** used as SA demand weight |
 | centroid_x | float64 | 100% | County centroid x-coordinate in EPSG:9311 meters |
 | centroid_y | float64 | 100% | County centroid y-coordinate in EPSG:9311 meters |
 | geometry | geometry | 100% | NE county polygon projected to EPSG:9311 |
 
-**Context**: Retained Task 3.2 preparation layer created by filtering the national county shapefile to the 14-state study area, joining `county_throughput.parquet`, projecting to the equal-area clustering CRS, and caching centroid coordinates for optimization reuse.
+**Context**: Retained Task 3.2 preparation layer created by filtering the national county shapefile to the 14-state study area, joining `county_activity_throughput.parquet` (visualization only), projecting to the equal-area clustering CRS, and caching centroid coordinates for optimization reuse. The SA clustering demand weight (`demand_weight`) is loaded separately from `county_external_throughput.parquet` at runtime and is not stored in this gpkg.
 
 ---
 
@@ -361,9 +376,10 @@ Task 3 data is now organized by role instead of a flat folder:
 | county_name | object | 100% | County name from the prepared NE subset |
 | state | object | 100% | State postal abbreviation |
 | region_id | int64 | 100% | Final Task 3.2 region label in `[0, 49]` |
-| throughput_ktons | float64 | 100% | County demand weight used in optimization |
+| external_throughput_ktons | float64 | 100% | County hub-facing demand weight used in SA optimization (NE-to-non-NE boundary flows) |
+| activity_throughput_ktons | float64 | 100% | All-flow bidirectional county demand (visualization reference only; not used in SA) |
 
-**Context**: Final Task 3.2 output used to join the 50-region solution back to maps or downstream analyses.
+**Context**: Final Task 3.2 output used to join the 50-region solution back to maps or downstream analyses. Use `external_throughput_ktons` for any hub location or capacity computation. The `activity_throughput_ktons` column is retained for visualization and reporting only.
 
 ---
 
@@ -375,14 +391,36 @@ Task 3 data is now organized by role instead of a flat folder:
 | ------ | ---- | -------- | ------- |
 | region_id | int64 | 100% | Region label in `[0, 49]` |
 | n_counties | int64 | 100% | Number of county-equivalent units in the region |
-| total_throughput_ktons | float64 | 100% | Regional demand total |
-| demand_vs_target_pct | float64 | 100% | Percent deviation from target throughput `W*` |
+| activity_throughput_ktons | float64 | 100% | Sum of all-flow bidirectional county demand (visualization only; not for hub sizing) |
+| external_throughput_ktons | float64 | 100% | Sum of county NE-to-non-NE external demand; hub-facing regional demand used in Task 5 capacity RHS |
+| demand_vs_target_pct | float64 | 100% | Percent deviation from external-demand target `W*` |
 | centroid_x_m | float64 | 100% | Region centroid x-coordinate in EPSG:9311 meters |
 | centroid_y_m | float64 | 100% | Region centroid y-coordinate in EPSG:9311 meters |
 | sse_m2 | float64 | 100% | Within-region compactness SSE in square meters |
 | is_connected | bool | 100% | Whether the final region remains graph-connected |
 
-**Context**: Final Task 3.2 export summarizing balance, compactness, and contiguity at the region level.
+**Context**: Final Task 3.2 export summarizing balance, compactness, and contiguity at the region level. Always use `external_throughput_ktons` for hub location and capacity decisions (Task 5 `T_r`). The `activity_throughput_ktons` column is for reporting and visualization only.
+
+---
+
+## `region_external_metrics.csv` — Post-assignment fully corrected hub-facing demand
+
+> **path** · `Data/Task3/outputs/region_external_metrics.csv` · **format** · csv · **shape** · 50 rows × 10 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| region_id | int64 | 100% | Region label in `[0, 49]` |
+| n_counties | int64 | 100% | Counties in the region |
+| external_in_ktons | float64 | 100% | Tonnage entering region from any county outside that final region |
+| external_out_ktons | float64 | 100% | Tonnage leaving region to any county outside that final region |
+| external_throughput_ktons | float64 | 100% | `external_in + external_out` — fully corrected hub-facing demand |
+| ne_non_ne_in_ktons | float64 | 100% | Subset: other endpoint is outside NE megaregion |
+| ne_non_ne_out_ktons | float64 | 100% | Subset: other endpoint is outside NE megaregion |
+| inter_region_in_ktons | float64 | 100% | Subset: other endpoint is NE but in a different final region |
+| inter_region_out_ktons | float64 | 100% | Subset: other endpoint is NE but in a different final region |
+| same_region_excluded_ktons | float64 | 100% | Raw tonnage removed because both endpoints are in the same final region |
+
+**Context**: Produced by `Task3/recompute_region_external_demand.py` after `region_assignment.csv` is available. Applies the final post-assignment correction: excludes all flows where both origin and destination are in the same Task 3.2 region. This is the most accurate hub-facing demand metric; `external_throughput_ktons` here should match `region_metrics.csv.external_throughput_ktons` after SA is rerun with corrected weights.
 
 ---
 

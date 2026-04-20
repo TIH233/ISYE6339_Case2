@@ -25,6 +25,8 @@ Two jobs, one lightweight workflow:
 ### CSV
 
 ```bash
+# Use conda (preferred) or venv (fallback):
+# conda run -n General_env python - <<'EOF'
 ~/.venvs/general/bin/python3 - <<'EOF'
 import pandas as pd
 path = "REPLACE_WITH_FILE_PATH"
@@ -44,6 +46,8 @@ EOF
 ### Parquet
 
 ```bash
+# Use conda (preferred) or venv (fallback):
+# conda run -n General_env python - <<'EOF'
 ~/.venvs/general/bin/python3 - <<'EOF'
 import pyarrow.parquet as pq
 path = "REPLACE_WITH_FILE_PATH"

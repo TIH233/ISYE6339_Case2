@@ -351,9 +351,9 @@ def compute_J(
     total_infra: float,
     total_throughput: float,
     k: int,
-    w_align: float,
-    w_compact: float,
-    w_balance: float,
+    w_align: float = 1.0,
+    w_compact: float = 1.0,
+    w_balance: float = 4.0,
 ) -> float:
     """
     Full three-component normalized objective J.
@@ -373,7 +373,7 @@ def compute_J(
     total_infra    : sum of all infra_weight values
     total_throughput : total freight throughput
     k              : number of regions
-    w_align, w_compact, w_balance : objective weights
+    w_align, w_compact, w_balance : objective weights (default w_balance=4.0 for 66.7% weight)
 
     Returns
     -------

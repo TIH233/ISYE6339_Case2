@@ -7,8 +7,9 @@ Use repository context before making changes:
 - Methodology and reference process: `Doc/Paper.md`
 - Data descriptions and schemas: `Doc/Data.md`
 
-Use the project virtual environment when running Python:
-- `~/.venvs/general/bin/python3`
+Use one of the two available Python environments when running Python:
+- **conda** (preferred): `conda run -n General_env python`
+- **venv** (fallback): `~/.venvs/general/bin/python3`
 
 Prefer the repository's agent skills for specialized or multi-step tasks.
 - Skills live under `.claude/skills/`

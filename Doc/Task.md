@@ -82,17 +82,22 @@ Demand-balanced, geographically contiguous and compact clusters aligned to inter
 
 #### Task 3.1 — Demand Map Construction `[complete]`
 
-Task 3.1 built the demand-mapping inputs for clustering by loading `Data/Task1/raw.parquet`, removing non-palletizable bulk commodities (`sctg1014`, `sctg1519`), standardizing county FIPS, aggregating 2025 inbound and outbound tonnage into county-level bidirectional throughput, and joining that demand surface to generalized Census county boundaries for the 14-state NE megaregion. The workflow then overlaid clipped NTAD interstate segments, Census rail segments, and Task 2 interface nodes to produce a publication-quality heatmap and composite infrastructure map; temporary intermediates (`freight_clean.parquet`, `ne_interstates.parquet`, `ne_railroads.parquet`) were deleted after validation. **Retained outputs:** `Data/Task3/derived/county_throughput.parquet`, `Data/Task3/figures/fig_demand_heatmap.png`, `Data/Task3/figures/fig_composite_map.png`.
+Task 3.1 built the demand-mapping inputs for clustering by loading `Data/Task1/raw.parquet`, removing non-palletizable bulk commodities (`sctg1014`, `sctg1519`), standardizing county FIPS, and computing two separate county-level demand metrics:
+
+- **Activity throughput** (`county_activity_throughput.parquet`): bidirectional all-flow endpoint sum used for heatmap / visualization only. Do not use for hub sizing.
+- **External throughput** (`county_external_throughput.parquet`): flows where one endpoint is NE and the other is non-NE. Hub-facing demand proxy used as clustering demand weight. A post-assignment correction (`Task3/recompute_region_external_demand.py`) further excludes same-final-region flows.
+
+The workflow joined the activity throughput to Census county boundaries for the 14-state NE megaregion, overlaid clipped NTAD interstate segments, Census rail segments, and Task 2 interface nodes, and produced a publication-quality heatmap and composite infrastructure map. Temporary intermediates (`freight_clean.parquet`, `ne_interstates.parquet`, `ne_railroads.parquet`) were deleted after validation. **Retained outputs:** `Data/Task3/derived/county_activity_throughput.parquet`, `Data/Task3/derived/county_external_throughput.parquet`, `Data/Task3/figures/fig_demand_heatmap.png`, `Data/Task3/figures/fig_composite_map.png`.
 
 #### Task 3.2 — Region Clustering (Simulated Annealing) `[complete]`
 
-Partition the 434 NE county-equivalent units into `k = 50` demand-balanced, spatially contiguous, compact regions aligned to major interstate/rail corridors using a Simulated Annealing (SA) graph-partitioning heuristic. Use `throughput` from `Data/Task3/derived/county_throughput.parquet` as the county demand weight (2025 bidirectional throughput in thousand short tons). Algorithm design is documented in `Task3/Cluster.md`, but the implementation below is the executable specification.
+Partition the 434 NE county-equivalent units into `k = 50` demand-balanced, spatially contiguous, compact regions aligned to major interstate/rail corridors using a Simulated Annealing (SA) graph-partitioning heuristic. Use `external_throughput` from `Data/Task3/derived/county_external_throughput.parquet` as the county demand weight (`demand_weight`, NE-to-non-NE boundary flows in thousand short tons). Algorithm design is documented in `Task3/Cluster.md`, but the implementation below is the executable specification.
 
 **Implementation reference:**
 
 #### Task 3.2.1 — NE County Preparation `[complete]`
 
-Loaded the national county shapefile from `Data/Task3/raw/census_counties/`, filtered to the 14-state study area, joined the national `Data/Task3/derived/county_throughput.parquet` table, projected the polygons to `EPSG:9311`, computed centroid coordinates, and cached the prepared 434-unit layer.
+Loaded the national county shapefile from `Data/Task3/raw/census_counties/`, filtered to the 14-state study area, joined the activity throughput from `Data/Task3/derived/county_activity_throughput.parquet` (visualization reference column), then joined external throughput from `Data/Task3/derived/county_external_throughput.parquet` as `demand_weight` (the SA clustering weight), projected the polygons to `EPSG:9311`, computed centroid coordinates, and cached the prepared 434-unit layer.
 
 **Key reference:** the valid clustering study area is **434** county-equivalent units, not a historical county count from another source.
 **Output:** `Data/Task3/derived/ne_counties_prepared.gpkg`
@@ -162,8 +167,9 @@ The final saved solution achieved:
 Saved the clustering diagnostics, final map, and tabular outputs for downstream tasks.
 
 **Figures:** `Data/Task3/figures/fig_sa_convergence.png`, `Data/Task3/figures/fig_demand_balance.png`, `Data/Task3/figures/fig_region_map.png`
-**Outputs:** `Data/Task3/outputs/region_assignment.csv`, `Data/Task3/outputs/region_metrics.csv`
-**Downstream use:** these outputs feed later node-screening and regional network design tasks.
+**Outputs:** `Data/Task3/outputs/region_assignment.csv` (with `external_throughput_ktons` and `activity_throughput_ktons` per county), `Data/Task3/outputs/region_metrics.csv` (with both `activity_throughput_ktons` and `external_throughput_ktons` per region)
+**Post-assignment correction:** run `Task3/recompute_region_external_demand.py` to produce `Data/Task3/outputs/region_external_metrics.csv` with fully corrected hub-facing demand that excludes same-final-region flows.
+**Downstream use:** `external_throughput_ktons` in `region_metrics.csv` feeds hub location and capacity decisions in Tasks 5+. Use `activity_throughput_ktons` for visualization only.
 
 ---
 
@@ -195,13 +201,13 @@ Select regional hubs from the CoStar candidate pool using a capacity-aware set-c
 | Symbol | Definition | Source |
 | ------ | ---------- | ------ |
 | s_h | Usable available floor area of hub h (sqft) | Task 4 `primary_regional_hub_candidates.csv` |
-| w_cr | Flow-based weight of county c in region r = county 2025 bidirectional throughput (ktons) | Task 3 `ne_counties_prepared.gpkg` joined to `county_throughput.parquet` |
+| w_cr | Flow-based weight of county c in region r = county 2025 external throughput (ktons; NE-to-non-NE boundary flows) | Task 3 `county_external_throughput.parquet` joined via `region_assignment.csv` |
 | d_hcr | Euclidean distance (EPSG:9311 meters) from hub h to centroid of county c in region r | Computed from hub lat/lon projected to EPSG:9311 |
 | d_h^road | Euclidean distance (EPSG:9311 meters) from hub h to the nearest US interstate segment | Computed from `North_American_Roads.shp` (CLASS=1, COUNTRY=2) |
 | β | Road accessibility threshold: hubs with d_h^road > β are excluded from H | Set at the 90th percentile of the candidate-to-interstate distance distribution |
 | Q̄ | Median usable sqft across all candidates in H; target capacity assignment for an average-demand region | Computed from H |
-| T_r | Total 2025 bidirectional throughput of region r (ktons) | Task 3 `region_metrics.csv` |
-| T̄ | Mean regional throughput across all 50 regions (ktons) | Computed from region_metrics |
+| T_r | Total 2025 external throughput of region r (ktons; `external_throughput_ktons`) | Task 3 `region_metrics.csv` |
+| T̄ | Mean regional external throughput across all 50 regions (ktons) | Computed from region_metrics |
 
 ##### Objective cost term
 

@@ -263,7 +263,9 @@ print(f"✓ {len(regions)} regions | demand range: "
       f"{max(r.total_demand for r in regions):,.0f}] tons")
 ```
 
-Use the kernel interpreter: `~/.venvs/general/bin/python3`
+Use one of the two available kernel interpreters:
+- **conda** (preferred): `conda run -n General_env python`
+- **venv** (fallback): `~/.venvs/general/bin/python3`
 
 ---
 
@@ -325,8 +327,9 @@ three tasks later.
 ## Quick reference
 
 ```python
-# Interpreter
-~/.venvs/general/bin/python3
+# Interpreter (pick one)
+# conda (preferred):  conda run -n General_env python
+# venv  (fallback):   ~/.venvs/general/bin/python3
 
 # Data paths
 Data/Task1/raw.parquet          # O-D matrix
