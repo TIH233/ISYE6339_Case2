@@ -594,3 +594,114 @@ Entry `r` is `RHS_r = Q̄ · (T_r / T̄)` in sqft, aligned to `region_metrics.cs
 | ---- | ----- | ------- |
 | `Q_bar.npy` | 306,250 sqft | Median `usable_available_space_sf` across H (1,675 candidates) |
 | `T_bar.npy` | 58,038.55 ktons | Mean `total_throughput_ktons` across all 50 regions |
+
+---
+
+## `selected_hubs.csv` — MIP-selected regional hubs (Task 5.6 final export)
+
+> **path** · `Data/Task5/selected_hubs.csv` · **format** · csv · **shape** · 51 rows × 13 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| h_idx | int64 | 100% | Row index in `H_candidates.parquet`; hub integer key used in Z_pairs and c_hat arrays |
+| candidate_id | object | 100% | Stable CoStar identifier from Task 4 (e.g. `T4-CT-00017`) |
+| facility_name | object | 100% | Resolved display name from CoStar |
+| city | object | 100% | City of the facility |
+| source_state | object | 100% | 2-letter state abbreviation |
+| region_id | int64 | 100% | Hub's home Task 3.2 region label `[0, 49]` from Task 4 assignment |
+| latitude | float64 | 100% | WGS-84 latitude |
+| longitude | float64 | 100% | WGS-84 longitude |
+| usable_available_space_sf | int64 | 100% | Usable floor area = s_h (sqft) |
+| d_road_m | float64 | 100% | Distance to nearest US interstate segment (metres) |
+| d_road_miles | float64 | 100% | Same distance in miles |
+| regions_served | object | 100% | Semicolon-separated list of region_ids this hub is assigned to serve (e.g. `0` or `24;24`) |
+| n_regions_served | int64 | 100% | Count of regions served (1 or 2) |
+
+**Key statistics**: 51 selected hubs; all serve exactly 1 region in this OPTIMAL solution (region 24 uses 2 separate hubs for capacity reasons). Hub states span CT, DE, MA, MD, ME, NH, NJ, NY, PA, RI, VA.
+
+**Downstream use**: Task 6 gateway node screening; Task 7 multi-tier integration.
+
+---
+
+## `hub_region_assignments.csv` — Hub–region pair table (Task 5.6 final export)
+
+> **path** · `Data/Task5/hub_region_assignments.csv` · **format** · csv · **shape** · 51 rows × 11 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| h_idx | int64 | 100% | Hub integer key (row index in `H_candidates.parquet`) |
+| candidate_id | object | 100% | Stable CoStar identifier |
+| facility_name | object | 100% | Facility display name |
+| city | object | 100% | Facility city |
+| source_state | object | 100% | 2-letter state abbreviation |
+| region_id | int64 | 100% | Task 3.2 region served by this assignment (the MIP A[h,r] = 1 region) |
+| usable_available_space_sf | int64 | 100% | Hub floor area s_h (sqft) contributed to this region's capacity |
+| d_road_miles | float64 | 100% | Hub road accessibility distance (miles) |
+| c_hat | float64 | 100% | MIP objective cost coefficient ĉ_hr for this (h, r) pair (ktons·m) |
+| latitude | float64 | 100% | WGS-84 latitude |
+| longitude | float64 | 100% | WGS-84 longitude |
+
+**Note**: 51 rows = 50 regions × 1 hub/region + 1 extra assignment for region 24 (2 hubs required to meet capacity RHS_24 = 813,530 sqft > max single hub 500,000 sqft).
+
+---
+
+## `task5_hub_network_links.csv` — Regional hub network links (Task 5.5 output)
+
+> **path** · `Data/Task5/task5_hub_network_links.csv` · **format** · csv · **shape** · 140 rows × 11 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| hub_a_h_idx | int64 | 100% | h_idx of the first hub endpoint |
+| hub_b_h_idx | int64 | 100% | h_idx of the second hub endpoint |
+| hub_a_candidate_id | object | 100% | candidate_id of hub A |
+| hub_b_candidate_id | object | 100% | candidate_id of hub B |
+| hub_a_name | object | 100% | facility_name of hub A |
+| hub_b_name | object | 100% | facility_name of hub B |
+| hub_a_state | object | 100% | source_state of hub A |
+| hub_b_state | object | 100% | source_state of hub B |
+| distance_miles | float64 | 100% | Euclidean straight-line distance between hubs (miles, EPSG:9311) |
+| drive_time_h | float64 | 100% | Estimated driving time = distance / 64 mph |
+| shared_region | bool | 100% | `True` if both hubs are co-assigned to the same region (p_h = 2 case) |
+
+**Construction**: Delaunay triangulation on 51 hub EPSG:9311 coordinates → unique undirected edges → supplemented with 1 shared-region pair (region 24) → pruned at 350 miles. Final 140 links; max distance = 350 mi (drive time ≤ 5.47 h at 64 mph).
+
+**Downstream use**: Task 7 network topology; Task 8 flow assignment routing.
+
+---
+
+## `region_hub_summary.csv` — Per-region hub coverage summary (Task 5.6 final export)
+
+> **path** · `Data/Task5/region_hub_summary.csv` · **format** · csv · **shape** · 50 rows × 10 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| region_id | int64 | 100% | Task 3.2 region label `[0, 49]` |
+| n_counties | int64 | 100% | Number of county-equivalent units in the region |
+| T_r_ktons | float64 | 100% | Total 2025 bidirectional throughput of the region (ktons) |
+| n_hubs_assigned | int64 | 100% | Number of MIP-selected hubs assigned to this region (1 or 2) |
+| assigned_hubs | object | 100% | Semicolon-separated h_idx list of assigned hubs |
+| assigned_sqft | int64 | 100% | Total usable sqft across assigned hubs (sum of s_h for assigned hubs) |
+| rhs_sqft | int64 | 100% | Capacity constraint RHS = Q̄ · (T_r / T̄) rounded to nearest integer |
+| capacity_slack_sqft | int64 | 100% | `assigned_sqft − rhs_sqft` (always ≥ 0 in a feasible solution) |
+| dw_dist_to_hub_miles | float64 | 100% | Demand-weighted average distance from region counties to nearest assigned hub (miles) |
+| out_of_region_hub | bool | 100% | `True` if any assigned hub's home `region_id` (from Task 4) differs from this region |
+
+**Key statistics**: All 50 capacity slacks ≥ 0 (Constraint 4 satisfied). Region 24 has `n_hubs_assigned = 2`; all others = 1.
+
+**Downstream use**: Task 6 and Task 7 for understanding regional coverage quality and identifying areas needing gateway node supplementation.
+
+---
+
+## `fig_regional_hub_locations.png` — Regional hub location map (Task 5.6 output)
+
+> **path** · `Data/Task5/figures/fig_regional_hub_locations.png` · **format** · png · **size** · ~636 KB
+
+**Context**: NE county choropleth colored by Task 3.2 region (tab20 colormap), with 51 selected hub markers (★) colored by their primary served region and sized proportional to `usable_available_space_sf`. State outlines overlaid in black.
+
+---
+
+## `fig_regional_hub_network.png` — Regional hub network map (Task 5.6 output)
+
+> **path** · `Data/Task5/figures/fig_regional_hub_network.png` · **format** · png · **size** · ~860 KB
+
+**Context**: Grey county basemap with NE US interstate overlay (light blue), 51 gold hub stars, and 140 network links. Link thickness is proportional to inverse distance (thicker = shorter); red links indicate shared-region co-assignments (p_h = 2 case).

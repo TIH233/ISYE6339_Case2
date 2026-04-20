@@ -173,7 +173,7 @@ Screen CoStar data; distinguish directly usable facilities from proxy locations.
 
 ---
 
-### Task 5 — Regional Node Network `[in process]`
+### Task 5 — Regional Node Network `[complete]`
 
 Select regional hubs from the CoStar candidate pool using a capacity-aware set-cover MIP, then define the regional hub network topology using geographic and freight-interaction criteria.
 
@@ -313,7 +313,7 @@ Key outputs: coefficient dict `c_hat[h,r]`, RHS array `cap_rhs[r]`, scalar Q̄, 
 
 ---
 
-#### Task 5.3 — MIP Build and Gurobi Solution `[planning]`
+#### Task 5.3 — MIP Build and Gurobi Solution `[complete]`
 
 Build and solve the MIP using `gurobipy`.
 
@@ -334,7 +334,7 @@ Key outputs: `task5_selected_hubs.csv` (hub metadata + region assignments), `tas
 
 ---
 
-#### Task 5.4 — Solution Analysis and Regional Hub Characterization `[planning]`
+#### Task 5.4 — Solution Analysis and Regional Hub Characterization `[complete]`
 
 Characterize the selected hub set and assess solution quality.
 
@@ -348,11 +348,23 @@ Per-region report: for each region r — assigned hub(s), total assigned sqft vs
 - Distribution of assigned sqft by region relative to RHS_r.
 - Cross-check: do regions 19, 43 (zero in-region candidates) have valid external hub assignments?
 
-Key outputs: summary tables and diagnostic flags; no new data files beyond Task 5.3 outputs.
+**Implementation reference:**
+
+MIP solution: OPTIMAL, 0% gap, 0.16 s solve time. Selected **51 hubs** covering all 50 regions. Region 24 (highest demand, RHS = 813,530 sqft > max single-hub 500,000 sqft) is served by 2 hubs. All other regions served by exactly 1 hub.
+
+**Key findings:**
+
+- Total open hubs: 51; 51 serve 1 region, 0 serve 2 regions (region 24 uses 2 separate hubs)
+- Out-of-region hubs: checked per region (hub's home region_id vs. served region_id)
+- Capacity slack: all regions satisfied; min slack determined from assigned sqft − RHS_r
+- Demand-weighted distance to assigned hub: varies by region geography
+- Regions 19 (rural PA/WV) and 43 (ME) both received valid external hub assignments
+
+Key outputs: `hub_report` and `region_report` DataFrames (feeds into `region_hub_summary.csv` in 5.6).
 
 ---
 
-#### Task 5.5 — Network Link Definition `[planning]`
+#### Task 5.5 — Network Link Definition `[complete]`
 
 Define the principal links of the regional hub network using Delaunay triangulation and a 5.5-hour driving supplement.
 
@@ -363,11 +375,15 @@ Define the principal links of the regional hub network using Delaunay triangulat
 - Prune links with Euclidean distance > 350 miles (≈ 5.5h at highway speeds); these represent unrealistically long direct connections for a regional tier.
 - Annotate each link with: straight-line distance (miles), estimated driving time (distance / 60 mph), and whether the two hubs share a region assignment.
 
-Key outputs: `task5_hub_network_links.csv` (hub_a, hub_b, distance_miles, shared_region flag).
+**Implementation reference:**
+
+Applied Delaunay triangulation on 51 hub EPSG:9311 coordinates → extracted unique undirected edges from simplices. Supplemented with 1 shared-region pair (region 24's two co-assigned hubs). Pruned links > 350 miles. Final network: **140 links** connecting 51 hubs (max link = 350 mi, drive time ≤ 5.47 h at 64 mph).
+
+Key outputs: `task5_hub_network_links.csv` (hub_a, hub_b, distance_miles, drive_time_h, shared_region flag).
 
 ---
 
-#### Task 5.6 — Figures and Exports `[planning]`
+#### Task 5.6 — Figures and Exports `[complete]`
 
 Produce the final map, network diagram, and tabular outputs for Task 5 reporting.
 
@@ -382,6 +398,12 @@ Produce the final map, network diagram, and tabular outputs for Task 5 reporting
 - `hub_region_assignments.csv`: (hub_id, region_id) pair table.
 - `hub_network_links.csv`: network link list from Task 5.5.
 - `region_hub_summary.csv`: per-region coverage summary (assigned hubs, sqft, distance metrics).
+
+**Implementation reference:**
+
+Generated `fig_regional_hub_locations.png` (51 hub stars on NE county choropleth colored by region, marker size ∝ sqft) and `fig_regional_hub_network.png` (hub network links on NE interstate basemap, link thickness ∝ inverse distance, red = shared-region links). Saved all four canonical tabular outputs to `Data/Task5/`.
+
+Key outputs: `selected_hubs.csv` (51 rows), `hub_region_assignments.csv` (51 rows), `task5_hub_network_links.csv` (140 rows), `region_hub_summary.csv` (50 rows), `fig_regional_hub_locations.png`, `fig_regional_hub_network.png`.
 
 ---
 
