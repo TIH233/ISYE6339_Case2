@@ -429,7 +429,7 @@ Produce the final map, network diagram, and tabular outputs for Task 5 reporting
 
 ### Task 6 — Gateway Node Design `[in process]`
 
-Cluster counties into freight areas within each region; screen CoStar for gateway candidates; select nodes avoiding redundancy. Implemented in two phases: **Phase 1** — population-typed Simulated Annealing (SA) area clustering (same architecture as Task 3 region clustering); **Phase 2** — Set-Cover MIP gateway hub selection per area.
+Cluster counties into freight areas within each region; screen CoStar for gateway candidates; select nodes avoiding redundancy. Implemented in two phases: **Phase 1** `[complete]` — population-typed Simulated Annealing (SA) area clustering using a standalone Task 6 module patterned after Task 3; **Phase 2** `[not started]` — Set-Cover MIP gateway hub selection per area.
 
 ---
 
@@ -502,7 +502,7 @@ Fetch Census 2020 county-level total population (`P1_001N`) for all 434 NE count
 
 #### Task 6.2 — Region Type Classification `[complete]`
 
-Classify each of the 50 regions into one of 3 population-based types that determine the Max-P area threshold.
+Classify each of the 50 regions into one of 3 population-based types that determine the fixed minimum area count used by the Phase 1 SA workflow.
 
 ##### Type assignment
 
@@ -525,7 +525,7 @@ The hard floor on number of areas is:
 
     min_areas_effective[r] = min(min_areas_type[type(r)], n_counties[r])
 
-Rationale: 6 Type A and 4 Type B regions have fewer counties than their type's min area target. A region cannot produce more areas than it has counties in Max-P.
+Rationale: 6 Type A and 3 Type B regions have fewer counties than their type's min area target in the current classification. A region cannot produce more areas than it has counties in the fixed-k area clustering workflow.
 
 Output: `region_type` column appended to `region_metrics` working frame.
 
@@ -591,21 +591,21 @@ with $\alpha_\text{dist} = \alpha_\text{balance} = 0.5$.  Population is used her
 
 #### Task 6.4 — SA Area Clustering `[complete]`
 
-Run the SA loop per region using the objective from Task 6.3. Reuse the Task 3 SA machinery (`clustering.py`) adapted for sub-region scope.
+Run the SA loop per region using the objective from Task 6.3. The implementation is standalone, but follows the same graph-partitioning architecture used for Task 3.
 
-##### Implementation module
+##### Implementation reference
 
-Write `Task6/area_clustering.py` containing:
+The area-clustering logic is implemented in `Task6/area_clustering.py`; the executed workflow, cache validation, output assembly, and figure generation are in `Task6/task6_phase1.ipynb`.
 
 | Function | Role |
 | --- | --- |
 | `build_region_graph(fips_list, edges_df)` | NetworkX subgraph for counties in region |
 | `initialize_area_partition(fips, cx, cy, pop, G, k_r)` | Maximin seeds + BFS growth |
-| `AreaStats` | Mutable cache: count, sum_pop, sum_x, sum_y, sse per area (mirrors `RegionStats`) |
-| `compute_delta_J_area(...)` | Incremental ΔJ for compact + spread |
+| `AreaStats` | Mutable area count/population/centroid cache; affected-area SSE and spread are recomputed directly for accuracy |
+| `compute_delta_J_area(...)` | Incremental ΔJ for compact + spread on the two affected areas |
 | `is_feasible_area(...)` | Hard constraint checker (see below) |
 | `run_sa_area(...)` | SA loop for one region |
-| `run_all_regions(...)` | Outer loop: iterate 50 regions, serialize cache |
+| `run_all_regions(...)` | Outer loop over 50 regions; returns the area label table consumed by the notebook |
 
 ##### Hard constraints — `is_feasible_area`
 
@@ -627,14 +627,15 @@ Note: the 80-mile distance constraint is a soft penalty in $C_\text{spread}$, no
 | `alpha` | 0.998 | Slower cooling than Task 3 (fewer counties = smaller search space) |
 | `T0` | sampled from 200 random feasible \|ΔJ\| | Same method as Task 3 `_sample_T0` |
 | `T_min` | 1e-6 | |
-| `n_restarts` | 2 | Best of 2; warm-starts restart 2 from restart 1 best |
+| `n_restarts` | 2 | Best of 2 independent restarts with different random seeds |
 | `patience` | 2,000 | Early stop if no J improvement |
-| `checkpoint_every` | 1,000 accepted proposals | Saved to `Data/Task6/cache/` |
 
-##### Edge cases (same as before)
+The notebook first validates `Data/Task6/cache/area_labels.parquet`; if it has 434 counties and the expected per-region area counts, it reuses the cache. Otherwise, it recomputes all region-level SA partitions and writes a fresh cache. The current implementation does not write per-restart checkpoint files.
+
+##### Edge cases
 
 - **Single-county region** (regions 0, 7, 12): area `"{r}_0"`, skip SA.
-- **Fewer counties than `k_r`**: one county per area (trivial partition), skip SA.
+- **`n_counties <= k_r`**: one county per area (trivial partition), skip SA. With the current county-count cap this occurs as equality, not as an infeasible `k_r > n_counties` case.
 
 ##### Output
 

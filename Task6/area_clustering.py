@@ -43,7 +43,7 @@ import pandas as pd
 
 class AreaStats:
     """
-    Mutable cache of per-area summary statistics for O(1) delta evaluation.
+    Mutable cache of per-area summary statistics used by move evaluation.
     
     For each area a in region r:
       count   — number of counties
@@ -52,7 +52,9 @@ class AreaStats:
       sum_y   — sum of centroid_y
       sse     — sum of squared distances to area centroid
     
-    This allows ΔC_compact and ΔC_balance to be computed in O(1) per move.
+    Population is retained for initialization diagnostics, but the SA objective
+    has no balance term.  ΔC_compact and ΔC_spread are recomputed on the two
+    affected areas for accuracy; areas are small enough that this is cheap.
     """
     
     def __init__(
