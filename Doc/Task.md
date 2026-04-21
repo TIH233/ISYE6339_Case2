@@ -1070,13 +1070,15 @@ Assign 2025 and 2030 county-to-county freight flows through the multi-tier netwo
 **Core simplifying assumptions (document in notebook):**
 - Freight routes through the nearest assigned hub in the hierarchy (no multi-hop shortest-path routing across the full 50-hub graph).
 - For multi-gateway areas: flow is split proportionally by `usable_available_space_sf` share across gateways assigned to the area.
-- For multi-hub regions (regions 0 and 7): flow split proportionally by `usable_available_space_sf` share across the 2 assigned hubs.
+- For multi-hub regions (regions 0 and 7): flow split proportionally by `usable_available_space_sf` share across the 2 assigned hubs. This weighting must be applied consistently in **both** Task 8.3 (hub throughput) and Task 8.4 (link flow loading); skipping it in Task 8.4 would silently assign all flow to whichever hub appears first in `hub_region_assignments.csv`.
 - Interface node flows use the Task 2 pre-allocated tons directly as boundary conditions (no re-derivation).
 - Only truck-compatible commodity flows are routed: exclude `sctg1014` (gravel) and `sctg1519` (coal/energy) — same filter as Task 5.
+- **Scope boundary (important for interpretation):** NE-internal flows (both endpoints inside the megaregion) are routed through the gateway and hub tiers. NE-external flows (interface nodes) are credited directly to the nearest regional hub in Task 8.6 — gateways do not see external traffic. Hub-level capacity was sized on NE-to-non-NE boundary flows only (447,344 ktons; `region_metrics.csv` definition). Do not compare gateway utilization against this capacity figure — they measure different traffic populations.
+- **`external_throughput_ktons` naming collision:** this column has two incompatible definitions across project files. `region_metrics.csv` and `area_metrics_phase2.csv` store NE-to-non-NE boundary flows only (total: 447,344 ktons). `region_external_metrics.csv` stores all inter-region flows including NE-NE cross-region traffic (total: 1,829,087 ktons — equals the `region_flow_matrix` inter-region total). Never mix these two sources in the same computation.
 
 ---
 
-#### Task 8.1 — County Routing Lookup Table `[not started]`
+#### Task 8.1 — County Routing Lookup Table `[complete]`
 
 Build a lookup table that maps every NE county to its gateway(s) and regional hub(s) with capacity-share weights.
 
@@ -1149,7 +1151,7 @@ For `internal` rows only: aggregate by `(origin_area_id, dest_area_id)`, summing
 
 **Output:** `Data/Task8/area_flow_matrix.parquet` — up to 17,424 rows (132×132), columns: `origin_area_id`, `dest_area_id`, `tons_2025`, `tons_2030`.
 
-Report: total internal tonnage (ktons) for 2025 vs. the `region_flow_matrix` inter-region total (1,829,087 ktons) as a cross-check.
+Report: total internal tonnage (ktons) for 2025. Cross-check against the `region_flow_matrix` **total** (including intra-region self-pairs): verified value = **2,454,583 ktons**. Do NOT compare against the inter-region-only slice (1,829,087 ktons) — that excludes intra-region self-pairs which are fully present in the area matrix as same-area rows.
 
 ---
 
@@ -1159,7 +1161,7 @@ Compute the total freight handled at each of the 50 regional hubs for 2025 and 2
 
 ##### Method
 
-Use the pre-aggregated `Data/Task5/cache/region_flow_matrix.parquet` (2,500 rows: `origin_region` float64, `dest_region` float64, `tons_2025` float64, `tons_2030` float64). Cast `origin_region` and `dest_region` to int.
+Use the pre-aggregated `Data/Task5/cache/region_flow_matrix.parquet` (2,500 rows: `origin_region` float64, `dest_region` float64, `tons_2025` float64, `tons_2030` float64). **Cast `origin_region` and `dest_region` to int immediately after loading** — the file stores region IDs as float64 (0.0, 1.0, …); any join to `hub_region_assignments.csv` (int64 `region_id`) before the cast will silently produce NaN rows.
 
 Load `Data/Task5/hub_region_assignments.csv` to get the `(region_id → candidate_id, usable_available_space_sf)` mapping with capacity shares (computed in Task 8.1 Step 3).
 
@@ -1187,10 +1189,21 @@ Assign flow to each of the 133 regional hub network links.
 
 ##### Method (direct-pair assignment, simplifying assumption)
 
-For each region-pair `(r_o, r_d)` with `r_o ≠ r_d`, look up the hub pair `(h_o, h_d)` via `hub_region_assignments.csv`. Check whether the edge `(h_o_candidate_id, h_d_candidate_id)` exists in `Data/Task5/task5_hub_network_links_flow_weighted.csv` (match on unordered pair of `hub_a_candidate_id` / `hub_b_candidate_id`).
+**Multi-hub region handling (critical):** For regions 0 and 7 (each with 2 assigned hubs), the `region_flow_matrix` row `(r_o, r_d, tons)` must be split across hub pairs using the same `hub_share` weights computed in Task 8.1 Step 3 and used in Task 8.3. For each `(r_o, r_d)` pair:
+
+    for h_o in hubs_of(r_o):
+        for h_d in hubs_of(r_d):
+            flow_on_hub_pair = tons × hub_share[h_o, r_o] × hub_share[h_d, r_d]
+            → assign flow_on_hub_pair to link (h_o, h_d)
+
+This is the same expansion as Task 8.3 — do not skip it for single-hub regions (hub_share = 1.0 there, so the loop degenerates trivially).
+
+**Link lookup:** Check whether the edge `(h_o_candidate_id, h_d_candidate_id)` exists in `Data/Task5/task5_hub_network_links_flow_weighted.csv` (match on unordered pair of `hub_a_candidate_id` / `hub_b_candidate_id`).
 
 - If the direct edge exists: assign the flow to that link.
-- If the direct edge does NOT exist: assign to the path `h_o → nearest_neighbor_of_h_o_toward_h_d` (use the existing Euclidean distances in `task5_hub_network_links_flow_weighted.csv` to find the neighbor that minimizes remaining distance to h_d). This handles the ~few region pairs whose hubs are not directly linked.
+- If the direct edge does NOT exist: assign to the path `h_o → nearest_neighbor_of_h_o_toward_h_d` (use the existing Euclidean distances in `task5_hub_network_links_flow_weighted.csv` to find the neighbor that minimizes remaining distance to h_d).
+
+**Coverage note:** Only 282 of 2,450 inter-region hub pairs (11.3%) have a direct link; **88.7% of pairs require the nearest-neighbor heuristic**. Link flow estimates from this task are approximate load indicators, not precise capacity calculations. Document this limitation prominently in the notebook and in the final analysis (Task 8.7).
 
 For each link in the 133-link network: sum all inter-region flows routed through it (both directions, since links are undirected).
 
@@ -1220,6 +1233,10 @@ For each row `(origin_area, dest_area, tons_2025, tons_2030)` in the area flow m
 
 Gateway throughput = inbound + outbound (intra-area flows counted once).
 
+**Scope note:** Gateway throughput computed here covers **NE-internal flows only** (both endpoints inside the megaregion, ~2,454,583 ktons total). NE-external flows are credited to regional hubs in Task 8.6 — gateways do not receive any share of that traffic. Gateway capacity RHS was sized on NE-to-non-NE boundary flows (447,344 ktons). Do not compare gateway throughput (NE-internal) against the capacity RHS (NE-external) — they measure different traffic populations and any utilization ratio computed this way would be meaningless.
+
+**`gateway_area_to_hub_links.csv` duplication warning:** Do NOT derive per-area demand by summing `external_throughput_ktons` in that file. Areas in multi-hub regions (0 and 7) generate one row per (gateway × hub) combination, so the area's throughput value repeats once per hub. Use `area_metrics_phase2.csv` (`external_throughput_ktons`) as the single source of truth for area-level demand.
+
 **Output:** `Data/Task8/gateway_throughput.csv` — 312 rows × columns: `candidate_id`, `facility_name`, `source_state`, `area_id`, `region_id`, `inbound_ktons_2025`, `outbound_ktons_2025`, `throughput_ktons_2025`, `throughput_ktons_2030`.
 
 ---
@@ -1232,7 +1249,11 @@ Connect the Task 2 interface node allocations to the nearest regional hub(s).
 
 Interface node allocations are pre-computed in Task 2 (use as-is — no re-derivation).
 
-**Unit normalization**: `task2_continental_interface_nodes_final.csv` has `tons_2025`/`tons_2030` in raw short tons — divide by 1000 to convert to ktons before use. Global and national files are already in ktons.
+**Unit source — load from `Data/Task7/nodes.csv`, not raw Task 2 files:** Task 7 already normalized continental tons ÷ 1000 and stored all interface nodes with `tons_2025_ktons` / `tons_2030_ktons` in consistent kton units. Loading the raw Task 2 files risks re-applying the ÷ 1000 factor (producing values 1000× too small) or forgetting it for the continental file (producing values 1000× too large). Use the `nodes.csv` columns directly:
+
+    iface = nodes_df[nodes_df['tier'] == 3][['node_id','facility_name','interface_class','latitude','longitude','tons_2025_ktons','tons_2030_ktons']]
+
+Continental verified range after normalization: 2,739–30,162 ktons. If values are in the millions, the raw file was loaded instead of `nodes.csv` — abort and reload.
 
 For each of the 29 interface nodes, find the nearest regional hub by minimum Euclidean distance in EPSG:9311:
 - Project interface node lat/lon to EPSG:9311 (use `pyproj.Transformer` from EPSG:4326 to EPSG:9311).
@@ -1242,6 +1263,8 @@ For each of the 29 interface nodes, find the nearest regional hub by minimum Euc
 
 **Inbound flows**: interface node's `tons_2025_ktons` is credited to the nearest hub as additional inbound throughput.
 **Outbound flows**: same tons credited as outbound (symmetry assumption — we do not have directional split for interface nodes at this stage).
+
+**Symmetry inflation note:** Crediting each interface node's volume as both inbound and outbound doubles the boundary-flow contribution to hub throughput. Total interface volume across all 29 nodes = 794,338 ktons; crediting symmetrically adds 1,588,676 ktons to hub throughput totals — 65% of the NE-internal flow volume. Hubs adjacent to major seaports or border crossings (e.g., hubs near Hampton Roads, JFK/EWR area, Buffalo Niagara Falls) will have their throughput rankings dominated by this assumption. Report `interface_throughput_ktons_2025` as a separate column so readers can distinguish internally-routed freight from boundary-assumption load.
 
 **Output:** `Data/Task8/interface_hub_routing.csv` — 29 rows × columns: `node_name`, `interface_class`, `nearest_hub_candidate_id`, `nearest_hub_name`, `distance_miles`, `tons_2025_ktons`, `tons_2030_ktons`.
 
@@ -1257,8 +1280,9 @@ Identify and rank the most critical nodes and links in the network for 2025.
 
 **Hub criticality (regional hubs):**
 - Rank by `throughput_ktons_2025` (descending). Report top 10.
-- Compute `interface_share` = `interface_throughput_ktons_2025 / throughput_ktons_2025` to flag hubs that are primary entry points for external flows.
+- Compute `interface_share` = `interface_throughput_ktons_2025 / (throughput_ktons_2025 + interface_throughput_ktons_2025)` to flag hubs that are primary entry points for external flows. Note: `interface_throughput_ktons_2025` from Task 8.6 is credited symmetrically (in + out), so `throughput_ktons_2025` from Task 8.3 and the interface component cover different traffic populations. Report them as additive but label them separately; do not interpret `interface_share` as a strictly comparable capacity utilization ratio.
 - Flag hubs with `n_regions_served = 2` (the 2 multi-region hubs).
+- **Link flow caveat:** 88.7% of inter-region hub pairs lack a direct network link and were routed via the nearest-neighbor heuristic. All link-level rankings in this task are approximate load indicators. State this limitation explicitly.
 
 **Hub criticality (gateway hubs):**
 - Rank by `throughput_ktons_2025` (descending). Report top 20.
