@@ -1,0 +1,42 @@
+{
+  "eval_id": 2,
+  "eval_name": "task3-clustering",
+  "prompt": "Write up Task 3 for the report — the demand map and clustering.",
+  "assertions": [
+    {
+      "id": "no_first_person",
+      "description": "No first-person subjects ('I', 'we', 'our') appear in the text",
+      "check": "grep -iE '\\bI\\b|\\bwe\\b|\\bour\\b' output — should return nothing"
+    },
+    {
+      "id": "has_section_header",
+      "description": "File contains a \\section{} LaTeX header for Task 3",
+      "check": "grep '\\\\section{' output — should match"
+    },
+    {
+      "id": "has_subsections",
+      "description": "At least 2 \\subsection{} headers",
+      "check": "Count \\\\subsection{ occurrences — should be >= 2"
+    },
+    {
+      "id": "has_sa_formulation",
+      "description": "Simulated annealing or clustering objective/formula present in math environment",
+      "check": "grep '\\\\begin{equation}\\|\\\\begin{align}' — should match; qualitatively check it relates to SA/clustering"
+    },
+    {
+      "id": "no_preamble",
+      "description": "No LaTeX preamble",
+      "check": "grep '\\\\documentclass' — should return nothing"
+    },
+    {
+      "id": "covers_both_subtasks",
+      "description": "Report covers both demand map (3.1) and clustering (3.2), not just one",
+      "check": "Qualitative check — does text discuss both throughput demand surface AND cluster assignment?"
+    },
+    {
+      "id": "mentions_region_count",
+      "description": "References the ~50 regions result",
+      "check": "grep '50\\|fifty' — should match"
+    }
+  ]
+}

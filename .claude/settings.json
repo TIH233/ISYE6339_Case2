@@ -3,7 +3,13 @@
     "allow": [
       "Bash(~/.venvs/general/bin/python3 -m jupyter nbconvert --to notebook --execute --inplace --ExecutePreprocessor.kernel_name=python3 --ExecutePreprocessor.timeout=600 map_create.ipynb)",
       "Bash(.claude/skills/coder/scripts/gate.sh commit:*)",
-      "Bash('~/.venvs/general/bin/python3' -c ':*)"
+      "Bash('~/.venvs/general/bin/python3' -c ':*)",
+      "Edit(/.claude/skills/report/**)",
+      "Edit(/.claude/skills/report-workspace/**)"
+    ],
+    "additionalDirectories": [
+      "/Users/tianyihu/Documents/Dev/Python/Projects/ISYE6339_Case2/.claude/skills/report-workspace",
+      "/Users/tianyihu/Documents/Dev/Python/Projects/ISYE6339_Case2/.claude/skills/report-workspace/iteration-1/eval-0-task2-interface-nodes/without_skill/outputs"
     ]
   },
   "enabledPlugins": {}

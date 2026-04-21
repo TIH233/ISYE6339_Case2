@@ -1,0 +1,42 @@
+{
+  "eval_id": 0,
+  "eval_name": "task2-interface-nodes",
+  "prompt": "Write the report for Task 2 — interface nodes. Save it to the output path.",
+  "assertions": [
+    {
+      "id": "no_first_person",
+      "description": "No first-person subjects ('I' or 'we') appear in the text",
+      "check": "grep -iE '\\bI\\b|\\bwe\\b|\\bour\\b' output — should return nothing"
+    },
+    {
+      "id": "has_section_header",
+      "description": "File contains a \\section{} LaTeX header for Task 2",
+      "check": "grep '\\\\section{' output — should match"
+    },
+    {
+      "id": "has_subsections",
+      "description": "At least 2 \\subsection{} headers present (condensed, not one per subtask)",
+      "check": "Count \\\\subsection{ occurrences — should be >= 2"
+    },
+    {
+      "id": "has_math_environment",
+      "description": "At least one LaTeX math environment present (equation, align, or similar)",
+      "check": "grep '\\\\begin{equation}\\|\\\\begin{align}' — should match"
+    },
+    {
+      "id": "no_preamble",
+      "description": "No LaTeX preamble (\\documentclass, \\begin{document}) — it's a snippet",
+      "check": "grep '\\\\documentclass\\|\\\\begin{document}' — should return nothing"
+    },
+    {
+      "id": "no_intro_section",
+      "description": "No introduction or executive summary section headers",
+      "check": "grep -i 'section{Introduction}\\|section{Executive' — should return nothing"
+    },
+    {
+      "id": "references_actual_results",
+      "description": "References actual Task 2 output data (seaports, airports, border crossings, throughput numbers)",
+      "check": "Qualitative check — does the text cite real node names or throughput figures?"
+    }
+  ]
+}

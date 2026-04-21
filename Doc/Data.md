@@ -888,3 +888,119 @@ Entry `r` is `RHS_r = Q̄ · (T_r / T̄)` in sqft, aligned to `region_metrics.cs
 > **path** · `Data/Task6/figures/fig_gateway_hub_network.png` · **format** · png · **size** · 726,909 bytes · **dimensions** · 2082 × 1444
 
 **Context**: Gateway-tier network map with colored area-to-hub links, dashed inter-area links, yellow gateway circles, and blue regional hub stars on a light regional-outline basemap.
+
+---
+
+# Task 8 — Flow Assignment Outputs
+
+## `county_routing_lookup.parquet` — County-to-gateway-to-hub routing table (Task 8.1)
+
+> **path** · `Data/Task8/county_routing_lookup.parquet` · **format** · parquet · **shape** · 1,112 rows × 8 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| fips | int64 | 100% | County FIPS code |
+| area_id | object | 100% | Freight area assignment |
+| region_id | int64 | 100% | Task 3 region assignment |
+| gateway_candidate_id | object | 100% | CoStar gateway hub ID |
+| hub_candidate_id | object | 100% | CoStar regional hub ID |
+| gw_share | float64 | 100% | Fraction of county flow routed to this gateway (sums to 1.0 per fips) |
+| hub_share | float64 | 100% | Fraction of area flow routed to this hub (sums to 1.0 per area_id) |
+| combined_share | float64 | 100% | `gw_share × hub_share`; sums to 1.0 per fips across all (gateway, hub) pairs |
+
+**Context**: One row per (county, gateway, hub) combination — the cross-product of area→gateway and region→hub assignments. Multi-gateway areas and multi-hub regions (0 and 7) each generate multiple rows per county. Use `combined_share` to split county-level flow to a specific (gateway, hub) pair.
+
+---
+
+## `area_flow_matrix.parquet` — 132×132 area-pair internal flow matrix (Task 8.2)
+
+> **path** · `Data/Task8/area_flow_matrix.parquet` · **format** · parquet · **shape** · 17,424 rows × 4 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| origin_area_id | object | 100% | Origin freight area |
+| dest_area_id | object | 100% | Destination freight area |
+| tons_2025 | float64 | 100% | NE-internal truck-compatible flow (ktons, 2025) |
+| tons_2030 | float64 | 100% | NE-internal truck-compatible flow (ktons, 2030) |
+
+**Context**: Aggregated from `raw.parquet` after commodity filter (excluding `sctg1014`, `sctg1519`). Covers NE-internal flows only (both endpoints inside megaregion). Total 2025 tonnage ≈ 2,454,583 ktons (matches `region_flow_matrix` grand total). Used by Task 8.5 to compute gateway throughput.
+
+---
+
+## `hub_throughput.csv` — Regional hub throughput table (Task 8.3 + 8.6)
+
+> **path** · `Data/Task8/hub_throughput.csv` · **format** · csv · **shape** · 50 rows × 11 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| candidate_id | object | 100% | CoStar candidate identifier |
+| facility_name | object | 100% | Hub display name |
+| source_state | object | 100% | State abbreviation |
+| region_id | int64 | 100% | Task 3 region served |
+| inbound_ktons_2025 | float64 | 100% | Total inbound NE-internal flow (ktons) |
+| outbound_ktons_2025 | float64 | 100% | Total outbound NE-internal flow (ktons) |
+| internal_ktons_2025 | float64 | 100% | Intra-region self-flow at this hub (ktons) |
+| throughput_ktons_2025 | float64 | 100% | Total NE-internal throughput (inbound + outbound; ktons, 2025) |
+| throughput_ktons_2030 | float64 | 100% | NE-internal throughput for 2030 |
+| interface_throughput_ktons_2025 | float64 | 100% | Boundary flow credited from nearest interface nodes (ktons, 2025); counted symmetrically as both in and out |
+| interface_throughput_ktons_2030 | float64 | 100% | Boundary flow credited from nearest interface nodes (ktons, 2030) |
+
+**Context**: Hub-level freight load from two sources — NE-internal flows (Tasks 8.2–8.3) and interface node allocations (Task 8.6). Do not add `throughput_ktons_2025` and `interface_throughput_ktons_2025` to get a single utilization figure — they cover different traffic populations (NE-internal vs. NE-external boundary). Multi-hub regions (0 and 7) use capacity-share weighting.
+
+---
+
+## `gateway_throughput.csv` — Gateway hub throughput table (Task 8.5)
+
+> **path** · `Data/Task8/gateway_throughput.csv` · **format** · csv · **shape** · 312 rows × 9 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| candidate_id | object | 100% | CoStar candidate identifier |
+| facility_name | object | 100% | Gateway display name |
+| source_state | object | 100% | State abbreviation |
+| area_id | object | 100% | Parent freight area |
+| region_id | int64 | 100% | Parent Task 3 region |
+| inbound_ktons_2025 | float64 | 100% | Total inbound flow from other areas (ktons, 2025) |
+| outbound_ktons_2025 | float64 | 100% | Total outbound flow to other areas (ktons, 2025) |
+| throughput_ktons_2025 | float64 | 100% | Total NE-internal throughput (ktons, 2025) |
+| throughput_ktons_2030 | float64 | 100% | Total NE-internal throughput (ktons, 2030) |
+
+**Context**: NE-internal flows only (both endpoints inside the megaregion). Interface node traffic is NOT included — gateways do not receive any share of NE-external flows. Gateway capacity RHS (from Task 6) was sized on NE-to-non-NE boundary flows; do not compare this throughput against that RHS.
+
+---
+
+## `hub_link_flows.csv` — Regional hub network link flow table (Task 8.4)
+
+> **path** · `Data/Task8/hub_link_flows.csv` · **format** · csv · **shape** · 133 rows × 8 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| hub_a_candidate_id | object | 100% | CoStar candidate ID for endpoint A |
+| hub_b_candidate_id | object | 100% | CoStar candidate ID for endpoint B |
+| hub_a_name | object | 100% | Facility name for hub A |
+| hub_b_name | object | 100% | Facility name for hub B |
+| distance_miles | float64 | 100% | Straight-line distance between hubs (miles) |
+| flow_ktons_2025 | float64 | 100% | Estimated flow on this link (ktons, 2025) |
+| flow_ktons_2030 | float64 | 100% | Estimated flow on this link (ktons, 2030) |
+| flow_intensity_original_ktons | float64 | 100% | Task 5.5 construction weight for comparison |
+
+**Context**: 88.7% of inter-region hub pairs lack a direct link and are approximated via a nearest-neighbor heuristic. Link flows are load indicators, not precise capacity calculations. `flow_intensity_original_ktons` is the Task 5.5 freight interaction weight used to build the network — use it to validate that high-flow links were captured correctly.
+
+---
+
+## `interface_hub_routing.csv` — Interface node to nearest regional hub assignments (Task 8.6)
+
+> **path** · `Data/Task8/interface_hub_routing.csv` · **format** · csv · **shape** · 29 rows × 8 cols
+
+| Column | Type | Non-null | Meaning |
+| ------ | ---- | -------- | ------- |
+| node_name | object | 100% | Interface node name |
+| facility_name | object | 100% | Display name (may equal node_name) |
+| interface_class | object | 100% | `"global"`, `"continental"`, or `"national"` |
+| nearest_hub_candidate_id | object | 100% | Nearest regional hub CoStar candidate ID |
+| nearest_hub_name | object | 100% | Nearest regional hub facility name |
+| distance_miles | float64 | 100% | EPSG:9311 projected distance to nearest hub (miles) |
+| tons_2025_ktons | float64 | 100% | Interface node 2025 allocation (ktons); same as `nodes.csv` |
+| tons_2030_ktons | float64 | 100% | Interface node 2030 allocation (ktons) |
+
+**Context**: Each of the 29 Task 2 interface nodes is connected to its nearest regional hub (minimum Euclidean distance in EPSG:9311). Allocations are taken directly from `Data/Task7/nodes.csv` (already unit-normalized). Each node's tonnage is credited symmetrically as both inbound and outbound at the nearest hub, inflating hub throughput for hubs near major seaports or border crossings.

@@ -1,0 +1,187 @@
+% Task 1 — County-to-County Freight Flow Matrix
+% Northeast Megaregion Freight Network Design
+% All tonnage figures are in thousand short tons (ktons) unless otherwise noted.
+
+\section{Task 1 — County-to-County Freight Flow Matrix}
+
+The first task establishes the demand foundation for the entire network design pipeline.
+A county-to-county origin--destination (O-D) freight flow matrix is constructed for the
+14-state Northeast megaregion using Federal Highway Administration Freight Analysis
+Framework (FAF) experimental county-level flow data, covering 2025 base-year estimates
+and 2030 forecasts across all modes and commodity groups.
+
+\subsection{Data Scope and Flow Classification}
+
+The FAF county-county parquet file contains all-mode freight O-D flows for every pair
+of US county-equivalent units. After loading and standardizing five-digit FIPS codes,
+each flow record is joined against a county FIPS lookup to determine whether the origin
+and destination fall within the 14-state Northeast study area (Connecticut, Delaware,
+Maine, Maryland, Massachusetts, New Hampshire, New Jersey, New York, Pennsylvania,
+Rhode Island, Vermont, Virginia, Washington D.C., and West Virginia — 434
+county-equivalent units in total).
+
+Every flow record is assigned to exactly one of four mutually exclusive classes:
+
+\begin{align}
+\text{flow\_type} = \begin{cases}
+\textit{internal}  & \text{if both origin and destination are NE counties,}\\
+\textit{inbound}   & \text{if the origin is non-NE and the destination is NE,}\\
+\textit{outbound}  & \text{if the origin is NE and the destination is non-NE,}\\
+\textit{outside}   & \text{otherwise (both endpoints external to the NE).}
+\end{cases}
+\end{align}
+
+Only \textit{internal}, \textit{inbound}, and \textit{outbound} records are retained for
+downstream analysis; \textit{outside} flows are discarded. The resulting dataset contains
+33.4 million O-D-commodity records spanning 3{,}144 unique county origins and 3{,}144
+unique county destinations.
+
+\subsection{Flow-Type and Mode Breakdown}
+
+Table~\ref{tab:task1-flow-type} summarizes total freight tonnage by flow type for
+2025 and 2030. Internal flows — freight that both originates and terminates within the
+Northeast — constitute the dominant share at 79.3\% of the regional freight mass.
+Inbound and outbound flows each account for approximately 10\%, reflecting the
+megaregion's substantial self-sufficiency combined with meaningful external trade.
+All three flow types are projected to grow through 2030, with inbound freight growing
+fastest (+11.6\%).
+
+\begin{table}[H]
+\centering
+\caption{Freight tonnage by flow type, 2025 and 2030 (thousand short tons).}
+\begin{tabular}{lrrr}
+\toprule
+Flow Type & 2025 (ktons) & 2030 (ktons) & Growth (\%) \\
+\midrule
+Internal  & 2{,}624{,}252 & 2{,}879{,}815 & +9.7 \\
+Inbound   &   344{,}774 &   384{,}860 & +11.6 \\
+Outbound  &   338{,}619 &   360{,}668 & +6.5 \\
+\midrule
+\textbf{Total} & \textbf{3{,}307{,}644} & \textbf{3{,}625{,}342} & +9.6 \\
+\bottomrule
+\end{tabular}
+\label{tab:task1-flow-type}
+\end{table}
+
+Table~\ref{tab:task1-mode} presents the modal breakdown. Truck-and-air (mode 11)
+is overwhelmingly dominant at 72.1\% of total NE freight tonnage, confirming that
+road-based freight logistics is the primary planning focus. Pipeline freight (mode 6)
+accounts for 15.3\% — largely petroleum and natural gas — and is expected to grow only
+marginally (+0.6\%) through 2030. Rail contributes 6.1\%, while water freight is
+projected to decline slightly ($-$4.6\%), reflecting modal shifts on the Eastern Seaboard.
+
+\begin{table}[H]
+\centering
+\caption{Freight tonnage by transport mode, 2025 and 2030 (thousand short tons).}
+\begin{tabular}{llrrr}
+\toprule
+Mode & Label & 2025 (ktons) & 2030 (ktons) & Growth (\%) \\
+\midrule
+11 & Truck + Air        & 2{,}384{,}432 & 2{,}680{,}331 & +12.4 \\
+6  & Pipeline           &   505{,}769 &   508{,}568 & +0.6  \\
+2  & Rail               &   201{,}009 &   209{,}873 & +4.4  \\
+5  & Multiple / Mail    &   125{,}227 &   139{,}551 & +11.4 \\
+3  & Water              &    91{,}207 &    87{,}019 & $-$4.6 \\
+\bottomrule
+\end{tabular}
+\label{tab:task1-mode}
+\end{table}
+
+The trade-type distribution (Table~\ref{tab:task1-trade}) shows that 87.5\% of
+NE freight is purely domestic in character (trade type 1 — internal domestic).
+International import flows (6.6\%) and export flows (5.9\%) are growing faster
+than domestic freight through 2030, indicating increasing integration with global
+supply chains.
+
+\begin{table}[H]
+\centering
+\caption{Freight tonnage by trade type, 2025 and 2030 (thousand short tons).}
+\begin{tabular}{llrrr}
+\toprule
+Trade Type & Label & 2025 (ktons) & 2030 (ktons) & Growth (\%) \\
+\midrule
+1 & Internal (domestic) & 2{,}894{,}433 & 3{,}157{,}031 & +9.1  \\
+2 & Import              &   217{,}705 &   249{,}241 & +14.5 \\
+3 & Export              &   195{,}506 &   219{,}069 & +12.1 \\
+\bottomrule
+\end{tabular}
+\label{tab:task1-trade}
+\end{table}
+
+\subsection{State-Level Summaries and Pareto Analysis}
+
+Table~\ref{tab:task1-state} reports per-state inbound and outbound tonnage for all 14
+NE states in 2025. Pennsylvania leads in outbound freight (694{,}901 ktons), driven by
+its role as a regional distribution hub and gateway between the Midwest and the
+Northeast coast. New York exhibits the largest inbound volume (612{,}371 ktons),
+reflecting the gravitational pull of the New York metropolitan area. Virginia and
+New Jersey together account for over 725{,}000 ktons of outbound freight, underpinned
+by proximity to major port and intermodal complexes. The smallest states — Rhode Island,
+Vermont, and Washington D.C. — generate less than 50{,}000 ktons each in outbound flows.
+
+\begin{table}[H]
+\centering
+\caption{Per-state freight summary, 2025 (thousand short tons).}
+\begin{tabular}{lrr}
+\toprule
+State & Outbound 2025 (ktons) & Inbound 2025 (ktons) \\
+\midrule
+Pennsylvania      & 694{,}901 & 597{,}803 \\
+New York          & 534{,}471 & 612{,}371 \\
+Virginia          & 371{,}909 & 420{,}584 \\
+New Jersey        & 353{,}849 & 382{,}218 \\
+West Virginia     & 230{,}859 & 139{,}038 \\
+Maryland          & 214{,}835 & 233{,}391 \\
+Massachusetts     & 180{,}897 & 195{,}114 \\
+Connecticut       & 125{,}714 & 132{,}590 \\
+Maine             &  78{,}195 &  73{,}460 \\
+New Hampshire     &  57{,}150 &  65{,}844 \\
+Delaware          &  45{,}071 &  47{,}411 \\
+Rhode Island      &  36{,}589 &  35{,}068 \\
+Vermont           &  32{,}092 &  24{,}332 \\
+Washington D.C.   &   6{,}338 &   9{,}801 \\
+\bottomrule
+\end{tabular}
+\label{tab:task1-state}
+\end{table}
+
+A Pareto analysis of county-level outbound truck tonnage identifies the top-50 origin
+counties responsible for the largest outbound freight volumes. Table~\ref{tab:task1-top10}
+lists the top ten. Allegheny County (Pittsburgh, PA) leads all NE origins at
+65{,}815 ktons in 2025, followed by Erie County (Buffalo, NY) at 54{,}844 ktons and
+New York County (Manhattan, NY) at 52{,}158 ktons. The top-50 origin counties are
+concentrated in the major metropolitan corridors: Greater Philadelphia--Pittsburgh
+(PA), Greater New York (NY/NJ), and Greater Boston (MA), consistent with the I-95
+and I-76 freight corridors. On the destination side, Erie County, NY ranks first
+(61{,}472 ktons) followed closely by Allegheny County, PA (60{,}339 ktons), reinforcing
+the bidirectional importance of the PA--NY freight corridor.
+
+\begin{table}[H]
+\centering
+\caption{Top 10 origin counties by outbound freight tonnage, 2025 (thousand short tons).}
+\begin{tabular}{rlllr}
+\toprule
+Rank & FIPS & County & State & Outbound 2025 (ktons) \\
+\midrule
+1  & 42003 & Allegheny & Pennsylvania   & 65{,}815 \\
+2  & 36029 & Erie      & New York       & 54{,}844 \\
+3  & 36061 & New York  & New York       & 52{,}158 \\
+4  & 42101 & Philadelphia & Pennsylvania & 45{,}514 \\
+5  & 34023 & Middlesex & New Jersey     & 44{,}082 \\
+6  & 25017 & Middlesex & Massachusetts  & 42{,}700 \\
+7  & 24031 & Montgomery & Maryland      & 41{,}319 \\
+8  & 34039 & Union     & New Jersey     & 39{,}042 \\
+9  & 42123 & Warren    & Pennsylvania   & 36{,}845 \\
+10 & 36067 & Onondaga  & New York       & 36{,}439 \\
+\bottomrule
+\end{tabular}
+\label{tab:task1-top10}
+\end{table}
+
+The constructed O-D matrix provides the empirical demand foundation for all downstream
+tasks. County-level throughput values — derived from this matrix by summing inbound and
+outbound flows at each county endpoint — serve as the demand weights for region
+clustering (Task 3) and the capacity sizing inputs for hub location (Task 5). The
+dominance of truck-compatible freight confirms that the regional hub network will be
+designed primarily around road access, with rail and intermodal connectivity serving
+as secondary criteria.

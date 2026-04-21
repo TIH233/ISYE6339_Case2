@@ -1,0 +1,94 @@
+\documentclass[11pt, letterpaper]{article}
+
+% ── Encoding & fonts ──────────────────────────────────────────────────────────
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+
+% ── Page geometry ─────────────────────────────────────────────────────────────
+\usepackage[margin=1in]{geometry}
+
+% ── Math ──────────────────────────────────────────────────────────────────────
+\usepackage{amsmath, amssymb}
+
+% ── Tables ────────────────────────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+
+% ── Float containment ────────────────────────────────────────────────────────
+\usepackage[section]{placeins}  % floats cannot cross \section boundaries
+\usepackage{float}              % provides [H] exact placement specifier
+
+% ── Float page alignment (flush figures to top, not vertically centred) ───────
+\makeatletter
+\setlength{\@fptop}{0pt}
+\makeatother
+
+% ── Figures ───────────────────────────────────────────────────────────────────
+\usepackage{graphicx}
+\graphicspath{{figures/}}
+
+% ── Hyperlinks ────────────────────────────────────────────────────────────────
+\usepackage[hidelinks]{hyperref}
+
+% ── Micro-typography ──────────────────────────────────────────────────────────
+\usepackage{microtype}
+
+% ── Spacing ───────────────────────────────────────────────────────────────────
+\usepackage{parskip}          % paragraph spacing instead of indent
+\setlength{\parskip}{6pt}
+\raggedbottom                 % do not vertically stretch content to fill pages
+
+% ── Section formatting ────────────────────────────────────────────────────────
+\usepackage{titlesec}
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+
+% ── Header / footer ───────────────────────────────────────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small Northeast Megaregion Freight Network Design}
+\rhead{\small ISYE 6339 Casework 2}
+\cfoot{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ── Title page ────────────────────────────────────────────────────────────────
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\LARGE\bfseries Hyperconnected Multi-Tier Megaregional Freight Network Design\\[0.4em]
+  Northeast United States Case Study\par}
+  \vspace{1.5cm}
+  {\large ISYE 6339 — Casework 2\par}
+  \vspace{0.5cm}
+  {\large April 2026\par}
+  \vspace{3cm}
+  {\normalsize\textbf{Team 2}}
+  \vfill
+\end{titlepage}
+
+% ── Table of Contents ─────────────────────────────────────────────────────────
+\tableofcontents
+\clearpage
+
+% ── Task sections ─────────────────────────────────────────────────────────────
+\input{task1}
+
+\input{task2}
+
+\input{task3}
+
+\input{task4}
+
+\input{task5}
+
+\input{task6}
+
+\input{task7}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\end{document}

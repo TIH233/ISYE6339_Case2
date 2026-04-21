@@ -1,0 +1,229 @@
+% Task 3 — Demand Mapping and Region Clustering
+% Northeast US Megaregion Freight Network Design
+
+\section{Region Clustering}
+
+The third task of the network design pipeline establishes the territorial structure of the
+Northeast megaregion by (1) constructing a county-level freight demand surface that guides
+spatial analysis and (2) partitioning the 434 county-equivalent units into 50 demand-balanced,
+geographically contiguous, and infrastructure-aligned freight regions. These regions form the
+fundamental geographic unit for all downstream hub location, gateway design, and flow
+assignment work.
+
+% ------------------------------------------------------------------
+\subsection{Demand Surface Construction}
+
+\subsubsection{Commodity Filtering and Demand Metrics}
+
+The demand surface is derived from the county-to-county FAF freight flow matrix described in
+Task~1 (\texttt{raw.parquet}, 33.4M records). Non-palletizable bulk commodities --- gravel and
+mining products (\texttt{sctg1014}) and coal and energy products (\texttt{sctg1519}) --- are
+excluded from all demand computations, retaining only truck-compatible freight across the
+three palletizable commodity groups. This filter reflects the Physical Internet focus on
+unit-load capable flows and is applied consistently through all downstream tasks.
+
+Two county-level demand metrics are constructed from the filtered flow table and serve
+distinct roles:
+
+\textbf{Activity throughput.} The bidirectional all-flow endpoint sum --- $\text{tons\_in} +
+\text{tons\_out}$ --- captures total freight activity at a county, regardless of whether the
+paired endpoint lies inside or outside the megaregion. This metric is used exclusively for
+choropleth visualization and the composite infrastructure map; it is not used as a clustering
+weight or hub-sizing input because it double-counts intra-region flows that never generate
+inter-hub demand.
+
+\textbf{External throughput.} The NE-boundary demand metric retains only flows where one
+endpoint is inside the Northeast megaregion and the other is outside. Formally, for county
+$c$:
+\begin{equation}
+  T_c = \text{ext\_in}_c + \text{ext\_out}_c
+\end{equation}
+where $\text{ext\_in}_c$ is the 2025 tonnage arriving at $c$ from non-NE origins and
+$\text{ext\_out}_c$ is the tonnage departing $c$ to non-NE destinations (both in thousand
+short tons). This quantity serves as the SA clustering demand weight $w_c$ and, after
+aggregation to regions, as the hub-facing regional demand $T_r$ consumed by the Task~5
+capacity formulation.
+
+The distinction between these two metrics is critical. Activity throughput reflects raw
+freight intensity and is appropriate for visual communication. External throughput reflects
+the demand that regional hubs must actually process --- flows crossing the megaregion
+boundary --- and is therefore the correct signal for territorial partitioning aimed at hub
+network design.
+
+\subsubsection{Composite Infrastructure Map}
+
+County activity throughput is joined to the 2023 Census cartographic boundary shapefile and
+projected to EPSG:9311 (US National Atlas Equal Area) to produce a log-scale choropleth of
+freight intensity across the 434-county study area. Interstate segments from the NTAD North
+American Roads dataset (US interstates: \texttt{CLASS=1}, \texttt{COUNTRY=2}) and rail
+segments from the TIGER/Line national rail network are clipped to the megaregion extent and
+overlaid. The three tiers of Task~2 interface nodes --- global (seaports, cargo airports),
+continental (US--Canada border crossings), and national (external domestic hubs) --- are
+superimposed as scaled markers. The resulting composite map synthesizes freight demand,
+corridor infrastructure, and boundary interfaces in a single reference frame, providing the
+spatial intuition that motivates both the target region count and the corridor-alignment
+objective embedded in the clustering formulation.
+
+% ------------------------------------------------------------------
+\subsection{Region Clustering via Simulated Annealing}
+
+\subsubsection{Problem Formulation}
+
+The clustering task is to partition the 434 NE county-equivalent units into $k = 50$
+regions such that the resulting partition simultaneously satisfies three design properties:
+demand balance across regions, geographic compactness within regions, and alignment to
+major interstate and rail corridors. No standard closed-form algorithm optimizes all three
+jointly under a contiguity constraint, motivating a metaheuristic approach.
+
+Simulated Annealing (SA) on the county adjacency graph is adopted as the optimization
+engine. SA is well-suited to this problem class because (a) the feasible space --- contiguous,
+non-empty partitions of a planar graph --- has no tractable convex relaxation, (b) the
+move neighborhood (single county reassignments between adjacent regions) admits $O(1)$
+incremental objective evaluation, and (c) the annealing schedule allows escape from locally
+optimal but globally poor solutions that pure greedy methods typically produce on
+geography-constrained partitioning instances.
+
+\subsubsection{County Graph and Corridor Weights}
+
+The county adjacency graph is built using positive shared border length as the adjacency
+criterion; point-only contacts (e.g., four-corner touches) are excluded. Known island
+cases are patched with documented synthetic links. Each edge $(i,j)$ in the graph is
+augmented with an infrastructure weight:
+\begin{equation}
+  \omega_{ij} = f\!\left(\text{interstate\_km}_{ij},\, \text{rail\_km}_{ij}\right)
+\end{equation}
+computed from the total length of interstate and rail segments crossing the shared border.
+This weight enters the alignment penalty described below: cutting an edge with high
+$\omega_{ij}$ --- placing counties $i$ and $j$ in different regions across a major
+corridor --- incurs a larger penalty than cutting a low-infrastructure border.
+
+\subsubsection{Objective Function}
+
+The SA energy function $J$ is a normalized sum of three penalties:
+\begin{align}
+  J &= \lambda_{\text{align}} \cdot P_{\text{align}}
+      + \lambda_{\text{compact}} \cdot P_{\text{compact}}
+      + \lambda_{\text{balance}} \cdot P_{\text{balance}}
+\end{align}
+
+\textbf{Alignment penalty} $P_{\text{align}}$ measures the fraction of infrastructure
+weight that crosses region boundaries (cut edges weighted by $\omega_{ij}$). Minimizing
+this term encourages regions to be bounded by, rather than bisected by, major corridors ---
+the appropriate design intent for a hub network whose traffic follows interstate and rail
+arteries.
+
+\textbf{Compactness penalty} $P_{\text{compact}}$ is the normalized within-region centroid
+sum of squared distances (SSE):
+\begin{equation}
+  P_{\text{compact}} = \sum_{r=1}^{k} \sum_{c \in R_r}
+    \bigl\| \mathbf{x}_c - \boldsymbol{\mu}_r \bigr\|^2
+\end{equation}
+where $\mathbf{x}_c \in \mathbb{R}^2$ is the EPSG:9311 centroid of county $c$ and
+$\boldsymbol{\mu}_r$ is the demand-weighted centroid of region $r$. This term directly
+penalizes geographically elongated or dispersed regions that, while technically contiguous,
+would impose large travel distances on freight moving between hubs.
+
+\textbf{Demand balance penalty} $P_{\text{balance}}$ penalizes deviation from the target
+per-region external throughput $W^* = \sum_c T_c / k$:
+\begin{equation}
+  P_{\text{balance}} = \sum_{r=1}^{k} \left( \frac{T_r - W^*}{W^*} \right)^2
+\end{equation}
+where $T_r = \sum_{c \in R_r} T_c$ is the total external throughput of region $r$.
+Demand balance is essential because the downstream hub location model sizes hub capacity
+proportionally to $T_r$; severe imbalance would produce regions whose demand either
+saturates hub capacity or renders a hub unnecessary.
+
+\subsubsection{Move Validity and Incremental Evaluation}
+
+A proposed move reassigns a single county $c$ from its current region $r_{\text{from}}$ to
+an adjacent region $r_{\text{to}}$. Four hard filters determine move validity: (1) $c$ must
+share a border with at least one county already in $r_{\text{to}}$; (2) the donor region
+$r_{\text{from}}$ must retain at least one county; (3) $r_{\text{from}} \setminus \{c\}$
+must remain connected (verified by BFS on the region subgraph); and (4) a geometry screening
+proxy is applied but is not treated as the binding 5.5-hour travel time constraint, which is
+enforced at the hub-selection stage.
+
+Incremental $\Delta J$ evaluation computes only the change in $P_{\text{align}}$,
+$P_{\text{compact}}$, and $P_{\text{balance}}$ attributable to the two affected regions,
+reducing each proposal to $O(|R_r|)$ rather than $O(N)$ cost. All computationally expensive
+geometry operations are cached before the optimization loop begins; the SA loop itself
+operates exclusively on arrays, adjacency lists, and cached region statistics.
+
+\subsubsection{Initialization and Search Strategy}
+
+A two-phase warm start is used. First, weighted $k$-means is applied to county centroids
+(weighted by external throughput) to identify 50 dispersed seed counties. Second, contiguous
+region growing is performed over the county graph using distance and demand-overshoot
+penalties to expand each seed into a spatially connected region. The resulting initial
+partition is materially better than a pure BFS or nearest-centroid start, yielding an
+initial objective of $J_0 = 1.6205$ and providing the SA search a meaningful improvement
+trajectory. The annealing schedule uses empirical temperature scaling calibrated to initial
+$|\Delta J|$ samples, multiple restarts with independent random seeds, resumable
+checkpoints, and an early-stopping patience criterion. The best solution across all restarts
+is retained.
+
+% ------------------------------------------------------------------
+\subsection{Clustering Results and Quality Assessment}
+
+\subsubsection{Quantitative Solution Quality}
+
+The final SA solution achieves the following metrics:
+\begin{itemize}
+  \item Objective value: $J^* = 0.4910$ (initial $J_0 = 1.6205$; 69.7\% improvement)
+  \item Demand balance: coefficient of variation $\mathrm{CV} = 0.291$,
+        $\mathrm{nRMSE} = 0.291$
+  \item Corridor alignment: cut fraction $= 0.320$ (32.0\% of infrastructure-weighted
+        border length crosses region boundaries)
+  \item Contiguity: all 50 regions verified connected via BFS on the county adjacency graph
+\end{itemize}
+
+The 69.7\% reduction in $J$ from initialization to termination confirms that the SA search
+escapes the warm-start local optimum substantially. A CV of 0.291 on external throughput
+implies that the interquartile range of regional demand spans roughly half the mean --- a
+level of balance that is practically acceptable for a 50-region design covering a 14-state,
+geographically heterogeneous megaregion where population density and freight intensity vary
+by two orders of magnitude between rural Appalachian counties and the dense NJ/NY/PA
+corridor.
+
+\subsubsection{Structural Interpretation}
+
+The final 50-region partition is summarized in \texttt{region\_assignment.csv} (434 rows;
+columns: \texttt{fips}, \texttt{county\_name}, \texttt{state}, \texttt{region\_id},
+\texttt{external\_throughput\_ktons}, \texttt{activity\_throughput\_ktons}) and
+\texttt{region\_metrics.csv} (50 rows; columns: \texttt{region\_id}, \texttt{n\_counties},
+\texttt{external\_throughput\_ktons}, \texttt{centroid\_x\_m}, \texttt{centroid\_y\_m},
+\texttt{sse\_m2}, \texttt{is\_connected}).
+
+Several structural observations emerge from the solution:
+
+\textbf{Size heterogeneity.} Region county counts range from 1 (three single-county regions
+corresponding to highly urbanized, high-demand areas in PA, NY, and NJ) to 33 (a large rural
+region spanning ME, NH, and VT). Mean region size is 8.7 counties (standard deviation 7.3).
+This heterogeneity is a direct consequence of the demand-balance objective interacting with
+the underlying freight distribution: high-intensity urban counties generate enough external
+throughput to justify their own region, while low-intensity rural counties must be aggregated
+into large geographic units to reach a comparable demand level.
+
+\textbf{Corridor alignment.} The NJ Turnpike / I-95 corridor, I-81 in the Shenandoah
+Valley, and the I-90 Massachusetts Turnpike align with region boundaries rather than
+bisecting them, consistent with the alignment penalty design intent. Regions tend to be
+bounded on one or more sides by a major interstate, placing hub candidate sites in the
+interior of their served territory rather than at corridor crossings.
+
+\textbf{Compactness vs.\ demand balance tradeoff.} Nine regions covering Appalachian areas
+(WV, western VA, and rural NY/VT) are geographically large despite relatively low external
+throughput, with maximum pairwise county-centroid spans exceeding 150 miles. These regions
+reveal the fundamental tension in the formulation: enforcing demand balance in low-density
+areas forces large geographic extents, which raises the within-region SSE penalty. The
+solution accepts larger compactness penalties for these regions in exchange for globally
+better demand balance across all 50 regions. These large-span regions are explicitly flagged
+for special treatment in Task~6, where the 80-mile cross-area distance guideline is relaxed
+for an exempt set of nine geographically extended regions.
+
+\textbf{Post-assignment demand correction.} After the final region assignment is fixed, the
+external throughput weights are recomputed excluding flows where both origin and destination
+fall within the same region. This correction removes same-final-region flows that were
+counted as external demand during optimization (when final region membership was unknown) but
+do not cross region boundaries in the final solution. The corrected regional demand values
+are stored in \texttt{region\_external\_metrics.csv} and serve as the authoritative
+hub-facing demand $T_r$ for the Task~5 capacity formulation.

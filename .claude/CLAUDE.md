@@ -74,9 +74,32 @@ ISYE6339_Case2/
 │   ├── clustering.py                  # SA clustering implementation
 │   ├── diagnose_outliers.py           # Outlier diagnostics helper
 │   └── Cluster.md                     # Task 3 clustering design notes
-└── Task4/
-    ├── task4_preprocess.py            # Preprocessing script for Task 4 candidates
-    └── task4_candidate_screening.ipynb# Task 4 candidate screening notebook
+├── Task4/
+│   ├── task4_preprocess.py            # Preprocessing script for Task 4 candidates
+│   └── task4_candidate_screening.ipynb# Task 4 candidate screening notebook
+├── Task5/
+│   ├── task5_mip.ipynb                # Hub selection MIP + network link definition
+│   └── flow_weighted_links.py         # Task 5.5 flow-weighted link refinement
+├── Task6/
+│   ├── task6_phase1.ipynb             # Area clustering (SA)
+│   ├── task6_phase2.ipynb             # Gateway MIP selection
+│   ├── area_clustering.py             # SA area clustering implementation
+│   └── gateway_mip_solver.py          # Gateway hub MIP helper
+├── Task7/
+│   └── task7_integration.ipynb        # Multi-tier node/edge assembly + maps
+└── Task8/
+    ├── run_task8.ipynb                # Orchestrating notebook — runs all 8 steps
+    └── task8_pipeline/                # OOP package (one class per subtask)
+        ├── __init__.py
+        ├── config.py                  # Task8Config: all paths and constants
+        ├── routing_table.py           # 8.1 RoutingTableBuilder
+        ├── flow_matrix.py             # 8.2 AreaFlowMatrixBuilder
+        ├── hub_throughput.py          # 8.3 HubThroughputCalculator
+        ├── link_flow.py               # 8.4 LinkFlowLoader
+        ├── gateway_throughput.py      # 8.5 GatewayThroughputCalculator
+        ├── interface_routing.py       # 8.6 InterfaceNodeRouter
+        ├── analysis.py                # 8.7 FlowAnalyzer
+        └── figures.py                 # 8.8 FigureGenerator
 ```
 
 # Methodology Pipeline of paper.pdf
@@ -108,6 +131,18 @@ Key files for active tasks — always check full `Doc/Data.md` for schema before
 | `area_assignment.csv` | `Data/Task6/` | County→area_id map; required for Task 6 feasibility and adjacency logic |
 | `area_metrics_phase2.csv` | `Data/Task6/` | 132-area metrics table with `m_a` and final gateway capacity columns |
 | `gateway_selected.csv` | `Data/Task6/` | Final 312 selected gateways with served-area summaries |
+| `county_routing_lookup.parquet` | `Data/Task8/` | 1,112-row county→gateway→hub routing table with `combined_share` weights |
+| `area_flow_matrix.parquet` | `Data/Task8/` | 132×132 NE-internal area-pair flow matrix (17,424 rows); total ≈ 2,454,583 ktons |
+| `hub_throughput.csv` | `Data/Task8/` | 50-row regional hub throughput; includes `interface_throughput_ktons_2025/2030` columns |
+| `gateway_throughput.csv` | `Data/Task8/` | 312-row gateway hub throughput (NE-internal flows only) |
+| `hub_link_flows.csv` | `Data/Task8/` | 133-row hub-to-hub link flow estimates (88.7% via nearest-neighbor heuristic) |
+| `interface_hub_routing.csv` | `Data/Task8/` | 29-row interface node→nearest regional hub assignment table |
+| `county_routing_lookup.parquet` | `Data/Task8/` | 1,112-row county→gateway→hub routing table with `combined_share` weights |
+| `area_flow_matrix.parquet` | `Data/Task8/` | 132×132 NE-internal area-pair flow matrix (17,424 rows); total ≈ 2,454,583 ktons |
+| `hub_throughput.csv` | `Data/Task8/` | 50-row regional hub throughput; includes `interface_throughput_ktons_2025/2030` columns |
+| `gateway_throughput.csv` | `Data/Task8/` | 312-row gateway hub throughput (NE-internal flows only) |
+| `hub_link_flows.csv` | `Data/Task8/` | 133-row hub-to-hub link flow estimates (88.7% via nearest-neighbor heuristic) |
+| `interface_hub_routing.csv` | `Data/Task8/` | 29-row interface node→nearest regional hub assignment table |
 
 # Casework Tasks
 

@@ -1,0 +1,23 @@
+{
+  "skill_name": "report",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Write the report for Task 2 — interface nodes. Save it to Report/task2.tex.",
+      "expected_output": "A .tex file at Report/task2.tex covering interface node identification (global/continental/national tiers), condensed into 2-3 subsections, with professional tone, no 'I'/'we', key results cited from actual outputs.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "Draft the latex report for Task 5. This task is about selecting 50 regional hubs using a MIP. Make sure to include the formulation.",
+      "expected_output": "A .tex file at Report/task5.tex with a clean MIP formulation in LaTeX math, subsections grouping candidate screening + hub selection + network linking, reflections on tradeoffs, passive/third-person voice.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Write up Task 3 for the report — the demand map and clustering.",
+      "expected_output": "A .tex file at Report/task3.tex covering demand surface construction and SA clustering, with the SA objective/formulation shown, ~2 subsections, focused on logic and results not pipeline steps.",
+      "files": []
+    }
+  ]
+}

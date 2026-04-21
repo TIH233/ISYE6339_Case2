@@ -1,0 +1,73 @@
+% Task 5 — Regional Node Network
+% To be \input{} into a master LaTeX document.
+
+\section{Task 5 — Regional Hub Selection and Network Definition}
+
+The goal of this task is to select a set of at most 50 regional hub locations from the pre-screened CoStar candidate pool (Task~4) and then define the network topology linking those hubs. The selection must ensure that every one of the 50 freight regions identified in Task~3 receives adequate facility coverage, that assigned capacity scales with regional freight demand, and that every selected hub maintains practical access to the US interstate system. A Mixed-Integer Program (MIP) is used to make the selection in a principled, reproducible way, after which a hybrid flow-weighted strategy is applied to construct the hub-to-hub network links.
+
+% -------------------------------------------------------------------
+\subsection{Candidate Set Construction and Pre-Filtering}
+% -------------------------------------------------------------------
+
+The MIP operates on a pre-filtered set $H$ of hub candidates rather than the full CoStar pool, so that computationally expensive feasibility checks are resolved before the solver is invoked.
+
+\paragraph{Base pool.}
+The starting point is the 1,862-row \texttt{primary\_regional\_hub\_candidates.csv} produced in Task~4, which retains only existing logistics facilities with a rentable building area (RBA) of at least 200{,}000\,sq\,ft and valid megaregion coordinates. The RBA for each candidate serves as its usable capacity $s_h$ throughout the MIP.
+
+\paragraph{Road-accessibility gate ($\beta$).}
+Each candidate is matched to the nearest US interstate segment from the NTAD North American Roads layer (\texttt{COUNTRY=2, CLASS=1}) using a spatial STRtree in EPSG:9311. The resulting per-candidate distance $d_h^{\text{road}}$ is used to set a hard exclusion threshold:
+\begin{equation}
+    \beta \;=\; \text{90th percentile of } d_h^{\text{road}} \text{ across all 1{,}862 candidates} \;=\; 12{,}831\;\text{m} \;\approx\; 7.97\;\text{mi.}
+\end{equation}
+Candidates with $d_h^{\text{road}} > \beta$ are removed from $H$. The 90th-percentile choice retains the vast majority of the pool while excluding a thin tail of facilities that sit well away from any highway corridor. After this gate $|H| = 1{,}675$.
+
+\paragraph{Feasibility set $Z$.}
+Each candidate in $H$ is projected to EPSG:9311 and compared against the 50 region centroids from \texttt{region\_metrics.csv}. A hub--region pair $(h, r)$ enters the feasibility set $Z$ if the Euclidean distance does not exceed 150 miles (241{,}402\,m):
+\begin{equation}
+    Z \;=\; \bigl\{(h, r) \mid h \in H,\; r \in R,\; \|p_h - q_r\|_2 \leq 241{,}402\;\text{m}\bigr\}.
+\end{equation}
+This yields $|Z| = 25{,}667$ feasible hub--region pairs.
+
+% -------------------------------------------------------------------
+\subsection{MIP Formulation}
+% -------------------------------------------------------------------
+
+\paragraph{Objective cost coefficient.}
+For each $(h, r) \in Z$ the assignment cost is defined as a demand-weighted distance discounted by facility size:
+\begin{equation}
+    \hat{c}_{hr} \;=\; \left(\sum_{c \in C_r} w_{cr} \cdot d_{hcr}\right) \cdot \left(\frac{\bar{Q}}{s_h}\right)^{0.5}.
+\end{equation}
+
+\paragraph{Decision variables.}
+\begin{itemize}
+    \item $O_h \in \{0,1\}$: equals 1 if hub $h$ is opened.
+    \item $A_{hr} \in \{0,1\}$ for $(h,r) \in Z$: equals 1 if hub $h$ is assigned to serve region $r$.
+\end{itemize}
+
+\begin{align}
+    \min_{A, O} \quad & \sum_{(h,r)\in Z} \hat{c}_{hr} \cdot A_{hr} \\[4pt]
+    \text{s.t.} \quad
+    & \sum_{\substack{h:\,(h,r)\in Z}} A_{hr} \;\geq\; 1
+        && \forall\, r \in R \\[2pt]
+    & \sum_{\substack{r:\,(h,r)\in Z}} A_{hr} \;\leq\; 2
+        && \forall\, h \in H \\[2pt]
+    & O_h \;\leq\; \sum_{\substack{r:\,(h,r)\in Z}} A_{hr}
+        && \forall\, h \in H \\[2pt]
+    & \sum_{\substack{h:\,(h,r)\in Z}} A_{hr} \cdot s_h \;\geq\; \bar{Q}\cdot\frac{T_r}{\bar{T}}
+        && \forall\, r \in R \\[2pt]
+    & A_{hr},\; O_h \;\in\; \{0,1\}.
+\end{align}
+
+% -------------------------------------------------------------------
+\subsection{Solution and Hub Characterization}
+% -------------------------------------------------------------------
+
+The MIP reaches an optimal solution in 0.14 seconds with a 0.4352\% optimality gap, yielding \textbf{50 open regional hubs} covering all 50 regions through \textbf{52 hub--region assignments}. The selected hubs span 11 states with the heaviest concentration in Pennsylvania, New Jersey, and New York.
+
+The full hub characterization is exported to \texttt{Data/Task5/selected\_hubs.csv} (50 rows) and \texttt{Data/Task5/hub\_region\_assignments.csv} (52 rows).
+
+% -------------------------------------------------------------------
+\subsection{Regional Hub Network Definition}
+% -------------------------------------------------------------------
+
+The final network contains \textbf{133 links} produced via a three-stage hybrid refinement: Delaunay triangulation as a spatial foundation, freight interaction measurement from the county-to-county flow matrix, and prune/supplement passes based on flow-distance thresholds. The full link table is exported to \texttt{Data/Task5/task5\_hub\_network\_links\_flow\_weighted.csv}.

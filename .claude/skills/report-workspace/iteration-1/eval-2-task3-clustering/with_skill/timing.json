@@ -1,0 +1,6 @@
+{
+  "total_tokens": 78662,
+  "duration_ms": 212800,
+  "total_duration_seconds": 212.8,
+  "note": "Agent completed full report and provided complete LaTeX. Output: 3 subsections, 5 equations (T_c, omega_ij, J align, compactness SSE, demand balance), detailed SA formulation, results with J*=0.4910 (69.7% improvement), structural interpretation. Hit write permission prompt at save — full content recovered."
+}

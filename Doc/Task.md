@@ -1065,7 +1065,7 @@ Save the unified node and edge catalogs and verify completeness.
 
 Assign 2025 and 2030 county-to-county freight flows through the multi-tier network; compute throughput at every node and every link; identify critical hubs and corridors.
 
-**Implementation location:** `Task8/task8_flow_assignment.ipynb`
+**Implementation location:** `Task8/run_task8.ipynb` (orchestrating notebook) + `Task8/task8_pipeline/` (OOP package — one class per subtask)
 
 **Core simplifying assumptions (document in notebook):**
 - Freight routes through the nearest assigned hub in the hierarchy (no multi-hop shortest-path routing across the full 50-hub graph).

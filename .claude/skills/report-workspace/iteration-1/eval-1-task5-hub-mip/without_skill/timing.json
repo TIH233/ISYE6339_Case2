@@ -1,0 +1,6 @@
+{
+  "total_tokens": 81011,
+  "duration_ms": 240557,
+  "total_duration_seconds": 240.6,
+  "note": "Baseline agent produced complete LaTeX with MIP formulation, 4 subsections, full constraints, discussion section. Content recovered from agent summary. Notably rich for a baseline — had full objective + 5 constraints but less rationale per constraint and no cost-coefficient motivation paragraph."
+}

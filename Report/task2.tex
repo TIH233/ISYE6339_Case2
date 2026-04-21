@@ -1,0 +1,206 @@
+% Task 2 — Global, Continental, and National Interface Nodes
+% Northeast Megaregion Freight Network Design
+% Tonnage figures for global and national nodes are in thousand short tons (ktons).
+% Continental throughput figures are BTS border-crossing volume proxies (vehicle crossings).
+
+\section{Task 2 — Global, Continental, and National Interface Nodes}
+
+The second task identifies the interface nodes through which freight enters and exits the
+Northeast megaregion. These nodes bridge the regional hub network with broader global,
+continental, and domestic logistics systems. Twenty-nine nodes are catalogued across three
+tiers: nine global nodes (seaports and cargo airports), eight continental nodes
+(US--Canada border crossings), and twelve national nodes (high-interaction external
+domestic counties).
+
+\subsection{External Flow Isolation and Bucket Assignment}
+
+Interface nodes are anchored by external freight flows — those in which exactly one
+endpoint lies within the 14-state NE study area. From the Task 1 O-D matrix, all
+\textit{inbound} and \textit{outbound} records are retained; \textit{internal} and
+\textit{outside} flows are excluded. The resulting external flow table is then classified
+into four mutually exclusive buckets using a priority-ordered assignment rule:
+
+\begin{enumerate}
+  \item \textbf{Global maritime} — flows carried by water mode (FAF mode 3).
+  \item \textbf{Continental border} — flows with one endpoint in a US--Canada border state
+        (NY, VT, NH, or ME), after maritime flows are excluded.
+  \item \textbf{Global air} — flows carried by air or combined truck-and-air modes (FAF
+        modes 5 or 11), after the preceding two buckets are applied.
+  \item \textbf{National domestic} — all remaining external flows not captured by the
+        above rules.
+\end{enumerate}
+
+This bucket structure reflects the physical reality that freight entering or leaving the
+Northeast does so through distinct infrastructure types: seaports handle bulk maritime
+cargo; major international airports handle high-value air freight; the northern land border
+mediates Canada--US overland exchange; and the national domestic tier covers the
+megaregion's deep integration with Midwest, Mid-Atlantic, and Sun Belt supply chains.
+Each bucket's aggregate FAF tonnage is then allocated proportionally across the shortlisted
+nodes within that tier using infrastructure-specific throughput proxies.
+
+\subsection{Global Interface Nodes: Seaports and Cargo Airports}
+
+\paragraph{Maritime nodes.}
+Major commercial seaports along the NE coastline are shortlisted from the NTAD Commercial
+Strategic Seaports dataset. Two seaports are identified as primary global maritime
+gateways: Hampton Roads (VA) and Philadelphia (PA). The global maritime bucket tonnage
+is allocated equally between the two nodes, each receiving 20{,}205 ktons in 2025
+(Table~\ref{tab:task2-global}). Hampton Roads is the dominant deep-water port complex on
+the mid-Atlantic coast; Philadelphia anchies freight interoperability with the Delaware
+River estuary.
+
+\paragraph{Air cargo nodes.}
+Seven major Northeast cargo airports are shortlisted from the NTAD Aviation Facilities
+and NTAD Air-to-Truck Intermodal datasets. Throughput shares are derived from
+each facility's estimated intermodal area (\texttt{EST\_AREA}), which serves as a
+proxy for air cargo handling capacity. The global air bucket tonnage (479{,}243 ktons
+in 2025) is then allocated across the seven airports in proportion to their area shares.
+
+John F. Kennedy International Airport (JFK) dominates the air cargo tier, receiving
+236{,}426 ktons (49.3\% of the air allocation), reflecting its role as the premier
+international gateway for the New York metropolitan area. Philadelphia International
+(PHL) follows at 92{,}050 ktons (19.2\%) and Newark Liberty International (EWR) at
+73{,}353 ktons (15.3\%). Together, these three airports account for 84\% of NE air
+cargo throughput.
+
+\begin{table}[htbp]
+\centering
+\caption{Global interface nodes — allocated freight throughput, 2025 and 2030 (ktons).}
+\begin{tabular}{llllrr}
+\toprule
+Node & State & Type & 2025 (ktons) & 2030 (ktons) \\
+\midrule
+\multicolumn{5}{l}{\textit{Seaports}} \\
+Hampton Roads           & VA & Seaport       & 20{,}205 & 20{,}405 \\
+Philadelphia            & PA & Seaport       & 20{,}205 & 20{,}405 \\
+\midrule
+\multicolumn{5}{l}{\textit{Cargo Airports}} \\
+John F. Kennedy Intl    & NY & Cargo airport & 236{,}426 & 272{,}867 \\
+Philadelphia Intl       & PA & Cargo airport &  92{,}050 & 106{,}237 \\
+Newark Liberty Intl     & NJ & Cargo airport &  73{,}353 &  84{,}659 \\
+Washington Dulles Intl  & DC & Cargo airport &  26{,}581 &  30{,}679 \\
+Gen. E. L. Logan Intl   & MA & Cargo airport &  19{,}354 &  22{,}337 \\
+Pittsburgh Intl         & PA & Cargo airport &  15{,}949 &  18{,}407 \\
+BWI Thurgood Marshall   & MD & Cargo airport &  15{,}531 &  17{,}925 \\
+\bottomrule
+\end{tabular}
+\label{tab:task2-global}
+\end{table}
+
+\subsection{Continental Interface Nodes: US--Canada Border Crossings}
+
+US--Canada border crossings are sourced from the Bureau of Transportation Statistics
+(BTS) Border Crossing Entry Data. The dataset is filtered to the US--Canada border and
+to freight-relevant measurement categories (truck, truck container, rail container,
+and rail crossings). Coverage is restricted geographically to New York, Vermont,
+New Hampshire, and Maine — the four NE states with a direct Canadian land border.
+
+All qualifying crossing records are aggregated to node level by summing total crossing
+volume. The top eight nodes by crossing intensity are retained and ranked. The FAF
+\textit{continental border} bucket tonnage is then allocated across these eight crossings
+proportionally, using BTS crossing volume as the throughput proxy.
+
+\begin{table}[htbp]
+\centering
+\caption{Continental interface nodes — BTS crossing volume proxy and relative share, 2025.}
+\begin{tabular}{llrr}
+\toprule
+Border Crossing & State & Crossing Volume & Share (\%) \\
+\midrule
+Buffalo Niagara Falls   & NY & 30{,}162{,}118 & 49.2 \\
+Champlain--Rouses Point & NY &  9{,}776{,}473 & 16.0 \\
+Alexandria Bay          & NY &  6{,}417{,}140 & 10.5 \\
+Derby Line              & VT &  3{,}204{,}800 &  5.2 \\
+Highgate Springs        & VT &  3{,}179{,}169 &  5.2 \\
+Houlton                 & ME &  2{,}991{,}741 &  4.9 \\
+Jackman                 & ME &  2{,}777{,}799 &  4.5 \\
+Calais                  & ME &  2{,}738{,}811 &  4.5 \\
+\bottomrule
+\end{tabular}
+\label{tab:task2-continental}
+\end{table}
+
+As shown in Table~\ref{tab:task2-continental}, Buffalo Niagara Falls is the single
+dominant Canada gateway, commanding 49.2\% of total NE--Canada crossing volume.
+This reflects Buffalo's location at the western tip of New York State, directly across
+from Ontario, on the most heavily used I-90 / QEW corridor. Champlain--Rouses Point
+(16.0\%) and Alexandria Bay (10.5\%) rank second and third, capturing the Interstate
+87 and Bridge of Islands corridors, respectively. The six eastern crossings in Vermont
+and Maine together account for 24.3\% of total crossing volume, serving secondary
+Quebec--Maritime exchange routes.
+
+\subsection{National Interface Nodes: External Domestic Hubs}
+
+The national tier identifies the external US counties that exchange the greatest
+bilateral freight volumes with the Northeast. Both inbound external origins (counties
+sending freight into the NE) and outbound external destinations (counties receiving NE
+freight) are aggregated into a bilateral county interaction table using the
+\textit{national domestic} bucket. Counties are ranked by 2025 aggregate bilateral
+tonnage, and the top twelve are retained as national interface nodes. FAF
+\textit{national domestic} bucket tonnage (213{,}438 ktons in 2025) is allocated across
+the twelve nodes proportionally.
+
+\begin{table}[htbp]
+\centering
+\caption{National interface nodes — allocated freight throughput, 2025 (ktons).}
+\begin{tabular}{llr}
+\toprule
+County & State & 2025 (ktons) \\
+\midrule
+Lucas County (Toledo)          & OH & 24{,}970 \\
+Harris County (Houston)        & TX & 24{,}363 \\
+Cook County (Chicago)          & IL & 24{,}108 \\
+Franklin County (Columbus)     & OH & 21{,}339 \\
+Cuyahoga County (Cleveland)    & OH & 21{,}279 \\
+Hamilton County (Cincinnati)   & OH & 21{,}234 \\
+Los Angeles County             & CA & 15{,}785 \\
+Webb County (Laredo)           & TX & 13{,}995 \\
+Stark County (Canton)          & OH & 12{,}445 \\
+Jefferson County (Louisville)  & KY & 11{,}356 \\
+Mecklenburg County (Charlotte) & NC & 11{,}290 \\
+Wayne County (Detroit)         & MI & 11{,}273 \\
+\bottomrule
+\end{tabular}
+\label{tab:task2-national}
+\end{table}
+
+The national tier is strongly concentrated in Ohio, which contributes five of the twelve
+nodes (Lucas, Franklin, Cuyahoga, Hamilton, and Stark counties). This reflects Ohio's
+position as the primary logistics relay between the Northeast megaregion and the greater
+Midwest freight system, with direct I-80, I-76, and I-70 corridor connections. Harris
+County (Houston, TX) and Cook County (Chicago, IL) represent the two largest external
+metros with deep supply-chain ties to the Northeast. Los Angeles County and Laredo, TX
+capture Pacific Rim import flows and US--Mexico cross-border traffic, respectively.
+
+\subsection{Summary of Interface Node Tier Structure}
+
+Table~\ref{tab:task2-summary} consolidates the three interface tiers. In aggregate,
+the 29 interface nodes represent the principal gateways through which the Northeast
+megaregion exchanges freight with the rest of the world. These nodes are incorporated
+directly into the composite demand and infrastructure map (Task 3.1) and inform the
+external flow routing component of the network flow model (Task 8).
+
+\begin{table}[htbp]
+\centering
+\caption{Summary of interface node tier structure.}
+\begin{tabular}{llrr}
+\toprule
+Tier & Node Type & Node Count & Total Throughput 2025 \\
+\midrule
+Global    & Seaports + cargo airports  & 9  & 519{,}652 ktons \\
+Continental & US--Canada border crossings & 8  & Proportional (BTS proxy) \\
+National  & External domestic counties & 12 & 213{,}438 ktons \\
+\midrule
+\textbf{Total} & & \textbf{29} & \\
+\bottomrule
+\end{tabular}
+\label{tab:task2-summary}
+\end{table}
+
+The global tier concentrates almost entirely along the I-95 spine and the major Northeast
+airport hubs, with JFK and the Philadelphia--Hampton Roads seaport pair anchoring the
+two maritime gateways. The continental tier is dominated by the Buffalo--Champlain axis.
+The national tier's Ohio concentration highlights the I-80/I-76 Pennsylvania Turnpike
+corridor as the primary inland freight artery connecting the Northeast to the broader
+North American network. Together, these 29 nodes define the external boundary conditions
+that any hyperconnected freight network design must respect.

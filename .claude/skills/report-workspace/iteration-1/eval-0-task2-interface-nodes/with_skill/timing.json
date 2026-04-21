@@ -1,0 +1,6 @@
+{
+  "total_tokens": 79032,
+  "duration_ms": 123084,
+  "total_duration_seconds": 123.1,
+  "note": "Agent completed full research + writing; hit write permission prompt at save step. Output described: 4 subsections, 3 LaTeX equations (bucket logic, area-share formula, proportional allocation), 3 tables, passive voice enforced, reflections included."
+}

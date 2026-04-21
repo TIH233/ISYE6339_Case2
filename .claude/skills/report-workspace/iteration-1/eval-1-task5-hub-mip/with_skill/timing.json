@@ -1,0 +1,6 @@
+{
+  "total_tokens": 77371,
+  "duration_ms": 123393,
+  "total_duration_seconds": 123.4,
+  "note": "Agent completed full MIP formulation. Output: 4 subsections, full MIP objective + cost coefficient formula + 5 constraints with rationale, hub results (50 hubs, 52 assignments, 0.14s Gurobi, 0.44% gap), 133-link network. Hit write permission prompt at save."
+}

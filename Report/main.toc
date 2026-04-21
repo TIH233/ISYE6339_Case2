@@ -1,0 +1,61 @@
+\contentsline {section}{\numberline {1}Task 1 — County-to-County Freight Flow Matrix}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Data Scope and Flow Classification}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Flow-Type and Mode Breakdown}{2}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}State-Level Summaries and Pareto Analysis}{3}{subsection.1.3}%
+\contentsline {section}{\numberline {2}Task 2 — Global, Continental, and National Interface Nodes}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}External Flow Isolation and Bucket Assignment}{5}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Global Interface Nodes: Seaports and Cargo Airports}{5}{subsection.2.2}%
+\contentsline {paragraph}{Maritime nodes.}{5}{subsection.2.2}%
+\contentsline {paragraph}{Air cargo nodes.}{5}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Continental Interface Nodes: US--Canada Border Crossings}{6}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}National Interface Nodes: External Domestic Hubs}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Summary of Interface Node Tier Structure}{7}{subsection.2.5}%
+\contentsline {section}{\numberline {3}Task 3 — Demand Mapping and Region Clustering}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Demand Mapping and Infrastructure Overlay (Task 3.1)}{8}{subsection.3.1}%
+\contentsline {paragraph}{Throughput computation.}{8}{subsection.3.1}%
+\contentsline {paragraph}{Composite map.}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Graph Construction and Adjacency}{9}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Simulated Annealing Formulation (Task 3.2)}{10}{subsection.3.3}%
+\contentsline {paragraph}{Problem statement.}{10}{subsection.3.3}%
+\contentsline {paragraph}{Hard constraints.}{11}{equation.5}%
+\contentsline {paragraph}{Incremental evaluation.}{11}{Item.6}%
+\contentsline {subsection}{\numberline {3.4}Warm Start and Search Configuration}{11}{subsection.3.4}%
+\contentsline {paragraph}{Initialization.}{11}{subsection.3.4}%
+\contentsline {paragraph}{SA hyperparameters.}{12}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Results and Quality Assessment}{12}{subsection.3.5}%
+\contentsline {section}{\numberline {4}Task 4 — Regional Hub Candidate Screening}{15}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Data Source and Raw Pool}{15}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Screening Filters}{15}{subsection.4.2}%
+\contentsline {paragraph}{Filter 1 — Operational status.}{15}{subsection.4.2}%
+\contentsline {paragraph}{Filter 2 — Minimum capacity threshold.}{15}{subsection.4.2}%
+\contentsline {paragraph}{Filter 3 — Available space floor.}{15}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}Candidate Pool Characterization}{16}{subsection.4.3}%
+\contentsline {subsection}{\numberline {4.4}Geographic Distribution}{16}{subsection.4.4}%
+\contentsline {subsection}{\numberline {4.5}Candidate Classification and Downstream Use}{18}{subsection.4.5}%
+\contentsline {section}{\numberline {5}Task 5 — Regional Hub Selection and Network Design}{19}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Candidate Pre-Processing: Set $H$ and Feasibility Set $Z$}{19}{subsection.5.1}%
+\contentsline {paragraph}{Road-accessibility gate.}{19}{subsection.5.1}%
+\contentsline {paragraph}{Feasibility set $Z$.}{19}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}MIP Formulation}{19}{subsection.5.2}%
+\contentsline {paragraph}{Sets, parameters, and variables.}{19}{subsection.5.2}%
+\contentsline {paragraph}{Objective and constraints.}{19}{equation.6}%
+\contentsline {subsection}{\numberline {5.3}Solution and Hub Characterization}{20}{subsection.5.3}%
+\contentsline {subsection}{\numberline {5.4}Flow-Weighted Network Topology}{23}{subsection.5.4}%
+\contentsline {paragraph}{Hybrid link definition.}{23}{subsection.5.4}%
+\contentsline {section}{\numberline {6}Task 6 — Gateway Hub Design}{25}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Phase 1 — Area Clustering}{25}{subsection.6.1}%
+\contentsline {subsubsection}{\numberline {6.1.1}Region Type Classification}{25}{subsubsection.6.1.1}%
+\contentsline {subsubsection}{\numberline {6.1.2}SA Objective and Algorithm}{25}{subsubsection.6.1.2}%
+\contentsline {paragraph}{Hard constraints.}{26}{equation.15}%
+\contentsline {subsubsection}{\numberline {6.1.3}Area Clustering Results}{26}{subsubsection.6.1.3}%
+\contentsline {subsection}{\numberline {6.2}Phase 2 — Gateway Hub Selection}{28}{subsection.6.2}%
+\contentsline {subsubsection}{\numberline {6.2.1}Candidate Set $G$ and Feasibility Set $Z_{gw}$}{28}{subsubsection.6.2.1}%
+\contentsline {subsubsection}{\numberline {6.2.2}MIP Formulation}{28}{subsubsection.6.2.2}%
+\contentsline {subsubsection}{\numberline {6.2.3}Solution and Gateway Characterisation}{28}{subsubsection.6.2.3}%
+\contentsline {subsection}{\numberline {6.3}Network Link Definition}{30}{subsection.6.3}%
+\contentsline {paragraph}{Area-to-hub links.}{30}{subsection.6.3}%
+\contentsline {paragraph}{Inter-area links.}{30}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Task 7 --- Multi-Tier Integration}{31}{section.7}%
+\contentsline {subsection}{\numberline {7.1}Unified Node Catalog}{31}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Unified Edge Catalog and Validation}{32}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Integrated Geography and Hierarchy}{33}{subsection.7.3}%
