@@ -1125,7 +1125,7 @@ Assert: `combined_share` sums to 1.0 per `fips`.
 
 ---
 
-#### Task 8.2 — Area-Pair Flow Matrix `[not started]`
+#### Task 8.2 — Area-Pair Flow Matrix `[complete]`
 
 Aggregate county-to-county flows to a 132×132 area-pair matrix for both 2025 and 2030.
 
@@ -1155,7 +1155,7 @@ Report: total internal tonnage (ktons) for 2025. Cross-check against the `region
 
 ---
 
-#### Task 8.3 — Hub-Level Throughput `[not started]`
+#### Task 8.3 — Hub-Level Throughput `[complete]`
 
 Compute the total freight handled at each of the 50 regional hubs for 2025 and 2030.
 
