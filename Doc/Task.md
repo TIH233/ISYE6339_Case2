@@ -337,7 +337,7 @@ Build and solve the MIP using `gurobipy`.
 - Extract assignments: {(h,r) : A[h,r].X > 0.5}.
 - Record objective value, MIP gap, solve time.
 
-Key outputs: `task5_selected_hubs.csv` (hub metadata + region assignments), `task5_hub_region_assignments.csv` (full (h,r) pair list).
+Key outputs: `selected_hubs.csv` (hub metadata + region assignments), `hub_region_assignments.csv` (full (h,r) pair list).
 
 ---
 
@@ -767,7 +767,7 @@ Precompute before model build (not inside solver):
 
 Store S as a list of (g_idx, g_idx', area_id) triples. Report |S| — this determines the number of separation constraints added to the MIP.
 
-**Key outputs:** `Data/Task6/cache/G_candidates.parquet` (2,064 rows with EPSG:9311 coords and m_a per area), `Data/Task6/cache/Z_gw_pairs.npy` (index pairs), `Data/Task6/cache/separation_clashes.parquet` (S triples), `m_a` series saved in `area_metrics_phase2.csv`.
+**Key outputs:** `Data/Task6/cache/G_candidates.parquet` (2,014 rows after excluding Task 5 regional hubs, with EPSG:9311 coords), `Data/Task6/cache/Z_gw_pairs.npy` (17,156 feasible index pairs), `Data/Task6/cache/separation_clashes.parquet` (543,711 S triples), `m_a` series saved in `area_metrics_phase2.csv`.
 
 ---
 
@@ -811,7 +811,7 @@ Build and solve the single global MIP using `gurobipy`.
 
 | Symbol | Definition |
 |--------|-----------|
-| G | Gateway candidates (2,064 rows) |
+| G | Gateway candidates (2,014 rows after excluding Task 5 selected regional hubs) |
 | A | Areas (132) |
 | Z_gw | Feasible (g, a) pairs |
 | S | Separation clash triples (g, g', a) with dist(g,g') < 20 mi |
@@ -865,6 +865,10 @@ For each area a: assigned gateway(s), total assigned sqft vs. RHS_a (capacity sl
 - Areas in regions 4 and 16 (Appalachian): report coverage status and actual m_a achieved. These are documented sparse-area risks — do not treat as a solver error.
 - Summary table: total gateways by region_type.
 
+**Implementation reference:**
+
+Current exports contain **312 selected gateways** and **319 gateway-area assignments**. Of the 312 selected gateways, **305 serve 1 area** and **7 serve 2 areas**.
+
 **Key outputs:** `hub_report` and `area_report` DataFrames.
 
 ---
@@ -898,30 +902,408 @@ Produce final outputs for Task 6 reporting.
 
 | File | Content |
 |------|---------|
-| `Data/Task6/figures/fig_gateway_hub_locations.png` | NE basemap; gateway markers colored by region, sized by sqft; regional hub markers overlaid for reference |
-| `Data/Task6/figures/fig_gateway_hub_network.png` | Area-to-hub links (colored by region) + inter-area links (gray); link thickness ∝ external_throughput_ktons |
+| `Data/Task6/figures/fig_gateway_hub_locations.png` | NE basemap with interstate + rail overlays, yellow gateway markers sized by sqft, and green regional hub markers overlaid for reference |
+| `Data/Task6/figures/fig_gateway_hub_network.png` | Region-outline basemap with colored area-to-hub links, dashed inter-area links, yellow gateway markers, and blue regional hub markers; link thickness ∝ throughput |
 
 ##### Tabular exports
 
 | File | Content |
 |------|---------|
-| `Data/Task6/gateway_selected.csv` | All selected gateways with full characterization |
-| `Data/Task6/gateway_area_assignments.csv` | Full (g, a) pair list with ĉ_ga |
-| `Data/Task6/gateway_area_to_hub_links.csv` | Area-to-regional-hub links |
-| `Data/Task6/gateway_inter_area_links.csv` | Inter-area adjacency links |
-| `Data/Task6/area_metrics_phase2.csv` | `area_metrics.csv` extended with `m_a`, `n_selected_gateways`, `total_assigned_sqft`, `capacity_slack`, `demand_weighted_dist_miles` |
+| `Data/Task6/gateway_selected.csv` | 312 selected gateways with full characterization and served-area list |
+| `Data/Task6/gateway_area_assignments.csv` | 319-row full (g, a) pair list with ĉ_ga |
+| `Data/Task6/gateway_area_to_hub_links.csv` | 329 area-to-regional-hub links |
+| `Data/Task6/gateway_inter_area_links.csv` | 93 inter-area adjacency links |
+| `Data/Task6/area_metrics_phase2.csv` | `area_metrics.csv` extended with `m_a`, `n_selected_gateways`, `total_assigned_sqft`, `capacity_rhs_sqft`, and `capacity_slack_sqft` |
 
 ---
 
-### Task 7 — Multi-Tier Integration `[not started]`
+### Task 7 — Multi-Tier Integration `[complete]`
 
-Combine regional nodes, gateway nodes, regions, and areas into a single hierarchical network; produce maps and diagrams.
+Combine regional nodes, gateway nodes, regions, and areas into a single hierarchical network; produce maps and diagrams. This task is primarily a **visualization and assembly** task — all structural tables already exist from Tasks 2–6. No new MIP or clustering is needed.
+
+**Implementation location:** `Task7/task7_integration.ipynb`
+
+---
+
+#### Task 7.1 — Unified Node Catalog `[complete]`
+
+Assemble a single node table covering all physical tiers plus the Task 2 interface boundary nodes.
+
+##### Node table schema
+
+Build `nodes.csv` with one row per network node:
+
+| Column | Type | Source |
+|--------|------|--------|
+| `node_id` | str | Stable identifier: `"RH_{candidate_id}"` for regional hubs, `"GW_{candidate_id}"` for gateways, `"IF_{node_name_slug}"` for interface nodes |
+| `node_type` | str | `"regional_hub"`, `"gateway_hub"`, `"interface_global"`, `"interface_continental"`, `"interface_national"` |
+| `tier` | int | `1` = regional hub, `2` = gateway hub, `3` = interface node |
+| `candidate_id` | str | CoStar candidate_id for hub tiers; `None` for interface nodes |
+| `facility_name` | str | Display name |
+| `city` | str | City (hubs) or node_name (interface) |
+| `source_state` | str | State abbreviation |
+| `latitude` | float | WGS-84 lat |
+| `longitude` | float | WGS-84 lon |
+| `usable_available_space_sf` | float | sqft for hub tiers; `NaN` for interface nodes |
+| `region_id` | int | Parent region_id for regional hubs and gateway hubs; `NaN` for interface nodes |
+| `area_id` | str | Parent area_id for gateway hubs; `None` otherwise |
+| `interface_class` | str | `"global"`, `"continental"`, `"national"` for interface nodes; `None` for hub tiers |
+| `tons_2025_ktons` | float | For interface nodes: allocated tons in ktons (see unit note below); `NaN` for hub tiers |
+| `tons_2030_ktons` | float | Same for 2030 |
+
+##### Sources and joins
+
+- **Regional hubs (50 nodes)**: load `Data/Task5/selected_hubs.csv` — columns `candidate_id`, `facility_name`, `city`, `source_state`, `latitude`, `longitude`, `usable_available_space_sf`, `region_id`.
+- **Gateway hubs (312 nodes)**: load `Data/Task6/gateway_selected.csv` — columns `candidate_id`, `facility_name`, `city`, `source_state`, `latitude`, `longitude`, `usable_available_space_sf`, `region_id`. Derive `area_id` from the first entry in `areas_served` (split `|`).
+- **Interface nodes (29 nodes)**: load all three Task 2 files:
+  - `Data/Task2/task2_global_interface_nodes_final.csv` (9 rows)
+  - `Data/Task2/task2_continental_interface_nodes_final.csv` (8 rows)
+  - `Data/Task2/task2_national_interface_nodes_final.csv` (12 rows)
+  - **Unit normalization**: continental file `tons_2025`/`tons_2030` are in raw short tons — divide by 1000 to convert to ktons before concatenating. Global and national are already in ktons.
+  - Interface nodes have no lat/lon in the Task 2 CSVs — assign approximate coordinates manually or by geocoding node_name if needed for map plotting (can be `NaN` for table purposes).
+
+##### Output
+
+`Data/Task7/nodes.csv` — 391 rows (50 + 312 + 29).
+
+---
+
+#### Task 7.2 — Unified Edge Catalog `[complete]`
+
+Assemble a single edge table covering all link types in the network hierarchy.
+
+##### Edge table schema
+
+Build `edges.csv` with one row per directed or undirected link:
+
+| Column | Type | Source |
+|--------|------|--------|
+| `edge_id` | str | Auto-generated: `"E{i:05d}"` |
+| `from_node_id` | str | `node_id` of source endpoint (matches `nodes.csv`) |
+| `to_node_id` | str | `node_id` of target endpoint |
+| `edge_type` | str | `"hub_to_hub"`, `"gateway_to_hub"`, `"inter_area"`, `"interface_to_hub"` |
+| `is_directed` | bool | `False` for hub_to_hub and inter_area; `True` for gateway_to_hub and interface_to_hub |
+| `distance_miles` | float | Straight-line distance (miles) |
+| `flow_intensity_ktons` | float | Freight interaction weight used in Task 5.5 refinement; `NaN` for non-hub_to_hub edges |
+| `external_throughput_ktons` | float | Area demand for gateway_to_hub links; `NaN` otherwise |
+| `region_id` | int | Parent region for gateway_to_hub and inter_area edges |
+| `area_id` | str | Parent area for gateway_to_hub and inter_area edges |
+
+##### Sources per edge type
+
+1. **hub_to_hub (133 edges)**: load `Data/Task5/task5_hub_network_links_flow_weighted.csv`. Map `hub_a_candidate_id` → `"RH_{hub_a_candidate_id}"` and `hub_b_candidate_id` → `"RH_{hub_b_candidate_id}"` for `from_node_id`/`to_node_id`. Use `distance_miles` and `flow_intensity` columns directly.
+
+2. **gateway_to_hub (329 edges)**: load `Data/Task6/gateway_area_to_hub_links.csv`. Map `gateway_candidate_id` → `"GW_{...}"` and `regional_hub_candidate_id` → `"RH_{...}"`. Use `distance_miles` and `external_throughput_ktons`.
+
+3. **inter_area (93 edges)**: load `Data/Task6/gateway_inter_area_links.csv`. For each row, resolve the "representative gateway" for `area_a` and `area_b` — pick the gateway with the largest `usable_available_space_sf` in each area from `gateway_area_assignments.csv`. Use `cross_area_flow_ktons` as `external_throughput_ktons`.
+
+4. **interface_to_hub (29 edges — one per interface node)**: For each interface node, find the nearest regional hub by Euclidean distance in EPSG:9311. Project interface node lat/lon to EPSG:9311; load hub coordinates from `selected_hubs.csv` projected to EPSG:9311 via the same formula used in Task 5. Assign `"IF_{slug}"` → `"RH_{hub_candidate_id}"`.
+
+##### Output
+
+`Data/Task7/edges.csv` — ~584 rows (133 + 329 + 93 + 29).
+
+---
+
+#### Task 7.3 — Multi-Tier Map Figure `[complete]`
+
+Produce a single publication-quality map showing all tiers simultaneously on the NE basemap.
+
+##### Map layers (bottom to top)
+
+1. County polygons from `Data/Task3/derived/ne_counties_prepared.gpkg` — light gray fill, no outline
+2. Region boundaries — dissolved by `region_id`, thin dark outline
+3. US interstate segments from `Data/Task3/raw/roads/North_American_Roads.shp` (COUNTRY=2, CLASS=1) — light blue lines
+4. **inter_area links** (93) — dashed gray lines between area representative gateways
+5. **gateway_to_hub links** (329) — thin colored lines, colored by `region_id`
+6. **hub_to_hub links** (133) — thick lines, linewidth ∝ `flow_intensity_ktons` (scale range 0.5–4.0), colored medium blue
+7. **Interface nodes** (29) — diamond markers, colored by `interface_class` (global=red, continental=orange, national=purple), sized by `tons_2025_ktons`
+8. **Gateway hubs** (312) — small yellow circles, sized by `usable_available_space_sf`
+9. **Regional hubs** (50) — green star markers, sized by `usable_available_space_sf`
+
+**Output:** `Data/Task7/figures/fig_multitier_map.png`
+
+---
+
+#### Task 7.4 — Hierarchy Schematic `[complete]`
+
+Produce a schematic diagram (non-geographic) showing the tier structure and flow logic.
+
+Use matplotlib with manual layout:
+- Three horizontal bands: Interface tier (top), Regional Hub tier (middle), Gateway tier (bottom)
+- Sample 5–8 representative nodes per tier
+- Arrows showing flow direction between tiers with annotation labels
+- Annotate with aggregate statistics: 29 interface nodes, 50 regional hubs (133 links), 312 gateway hubs (329 area-to-hub links), 132 freight areas
+
+**Output:** `Data/Task7/figures/fig_hierarchy_schematic.png`
+
+---
+
+#### Task 7.5 — Task 7 Exports `[complete]`
+
+Save the unified node and edge catalogs and verify completeness.
+
+##### Validation checks
+
+- Every gateway hub `node_id` in `edges.csv` appears in `nodes.csv` (no orphan edges)
+- Every regional hub appears in at least one hub_to_hub edge and at least one gateway_to_hub edge
+- Every interface node appears in exactly one interface_to_hub edge
+- Total edge count = 133 + 329 + 93 + 29 = 584
+
+##### Outputs
+
+| File | Content |
+|------|---------|
+| `Data/Task7/nodes.csv` | 391-row unified node catalog |
+| `Data/Task7/edges.csv` | ~584-row unified edge catalog |
+| `Data/Task7/figures/fig_multitier_map.png` | Full multi-tier NE map |
+| `Data/Task7/figures/fig_hierarchy_schematic.png` | Tier hierarchy schematic |
 
 ---
 
 ### Task 8 — Flow Assignment `[not started]`
 
-Assign 2025 and 2030 flows through the network; identify critical nodes and highest-throughput corridors.
+Assign 2025 and 2030 county-to-county freight flows through the multi-tier network; compute throughput at every node and every link; identify critical hubs and corridors.
+
+**Implementation location:** `Task8/task8_flow_assignment.ipynb`
+
+**Core simplifying assumptions (document in notebook):**
+- Freight routes through the nearest assigned hub in the hierarchy (no multi-hop shortest-path routing across the full 50-hub graph).
+- For multi-gateway areas: flow is split proportionally by `usable_available_space_sf` share across gateways assigned to the area.
+- For multi-hub regions (regions 0 and 7): flow split proportionally by `usable_available_space_sf` share across the 2 assigned hubs.
+- Interface node flows use the Task 2 pre-allocated tons directly as boundary conditions (no re-derivation).
+- Only truck-compatible commodity flows are routed: exclude `sctg1014` (gravel) and `sctg1519` (coal/energy) — same filter as Task 5.
+
+---
+
+#### Task 8.1 — County Routing Lookup Table `[not started]`
+
+Build a lookup table that maps every NE county to its gateway(s) and regional hub(s) with capacity-share weights.
+
+##### Construction
+
+**Step 1 — County → area join:**
+
+Load `Data/Task6/area_assignment.csv` (`fips` int64, `area_id` str, `region_id` int). This is the primary county→area map. All 434 NE counties are present.
+
+**Step 2 — Area → gateway(s) with capacity shares:**
+
+Load `Data/Task6/gateway_area_assignments.csv` — columns `candidate_id`, `area_id`, `usable_available_space_sf`. For each `area_id`, compute:
+
+    gw_sqft_total[a] = sum(usable_available_space_sf for all gateways g assigned to area a)
+    gw_share[g, a]   = usable_available_space_sf[g] / gw_sqft_total[a]
+
+**Step 3 — Area → regional hub(s) with capacity shares:**
+
+Load `Data/Task5/hub_region_assignments.csv` — columns `candidate_id`, `region_id`, `usable_available_space_sf`. For each `region_id`, compute:
+
+    hub_sqft_total[r]  = sum(usable_available_space_sf for all hubs h assigned to region r)
+    hub_share[h, r]    = usable_available_space_sf[h] / hub_sqft_total[r]
+
+Note: all regions have 1 hub (share = 1.0) except regions 0 and 7 which each have 2 hubs.
+
+**Step 4 — Assemble flat routing table:**
+
+Produce `county_routing_lookup.parquet` with one row per (county, gateway, hub) combination — the cross-product of steps 2 and 3 connected through the area→region join:
+
+| Column | Type | Meaning |
+|--------|------|---------|
+| `fips` | int64 | County FIPS |
+| `area_id` | str | Area assignment |
+| `region_id` | int | Region assignment |
+| `gateway_candidate_id` | str | Gateway hub CoStar ID |
+| `hub_candidate_id` | str | Regional hub CoStar ID |
+| `gw_share` | float | Fraction of county flow routed to this gateway (sums to 1.0 within fips) |
+| `hub_share` | float | Fraction of area flow routed to this hub (sums to 1.0 within area_id) |
+| `combined_share` | float | `gw_share × hub_share` — fraction of county flow reaching this (gateway, hub) pair |
+
+Assert: `combined_share` sums to 1.0 per `fips`.
+
+**Key output:** `Data/Task8/county_routing_lookup.parquet`
+
+---
+
+#### Task 8.2 — Area-Pair Flow Matrix `[not started]`
+
+Aggregate county-to-county flows to a 132×132 area-pair matrix for both 2025 and 2030.
+
+##### Construction
+
+Load `Data/Task1/raw.parquet` (33.4M rows × 7 cols: `origin_county_fips` int64, `dest_county_fips` int64, `mode` int64, `sctgG5` str, `trade_type` int64, `tons_2025` float64, `tons_2030` float64).
+
+Apply commodity filter (same as Task 5):
+
+    keep rows where sctgG5 NOT IN ('sctg1014', 'sctg1519')
+
+Do NOT filter by mode or trade_type — include all modes for area-level throughput.
+
+Join `origin_county_fips` → `area_id` as `origin_area_id` using `county_routing_lookup.parquet` or directly from `area_assignment.csv` (fips→area_id). Note: only NE-county FIPS appear in `area_assignment.csv`; non-NE FIPS will be `NaN` after left join — keep those rows tagged as `external` origin/dest.
+
+Classify each row:
+
+- `internal`: both origin and dest fips are NE counties (both area_ids non-null)
+- `inbound`: origin is external (NaN area_id), dest is NE
+- `outbound`: origin is NE, dest is external (NaN area_id)
+
+For `internal` rows only: aggregate by `(origin_area_id, dest_area_id)`, summing `tons_2025` and `tons_2030`.
+
+**Output:** `Data/Task8/area_flow_matrix.parquet` — up to 17,424 rows (132×132), columns: `origin_area_id`, `dest_area_id`, `tons_2025`, `tons_2030`.
+
+Report: total internal tonnage (ktons) for 2025 vs. the `region_flow_matrix` inter-region total (1,829,087 ktons) as a cross-check.
+
+---
+
+#### Task 8.3 — Hub-Level Throughput `[not started]`
+
+Compute the total freight handled at each of the 50 regional hubs for 2025 and 2030.
+
+##### Method
+
+Use the pre-aggregated `Data/Task5/cache/region_flow_matrix.parquet` (2,500 rows: `origin_region` float64, `dest_region` float64, `tons_2025` float64, `tons_2030` float64). Cast `origin_region` and `dest_region` to int.
+
+Load `Data/Task5/hub_region_assignments.csv` to get the `(region_id → candidate_id, usable_available_space_sf)` mapping with capacity shares (computed in Task 8.1 Step 3).
+
+For each region-pair row `(r_o, r_d, tons)`:
+
+- Expand to hub pairs using the hub_share weights: for each hub h_o serving r_o and each hub h_d serving r_d:
+  - `flow_on_pair = tons × hub_share[h_o, r_o] × hub_share[h_d, r_d]`
+- Each hub h gets credited:
+  - `outbound_flow[h] += flow_on_pair` for all pairs where h = h_o
+  - `inbound_flow[h] += flow_on_pair` for all pairs where h = h_d
+  - Do NOT double-count intra-region self-pairs (where r_o == r_d and h_o == h_d) — count once as `internal_flow[h]`
+
+Hub throughput:
+
+    throughput_2025[h] = outbound_flow_2025[h] + inbound_flow_2025[h]
+    (intra-region self-flow is added once, not twice)
+
+**Output:** `Data/Task8/hub_throughput.csv` — 50 rows × columns: `candidate_id`, `facility_name`, `source_state`, `region_id`, `inbound_ktons_2025`, `outbound_ktons_2025`, `internal_ktons_2025`, `throughput_ktons_2025`, `throughput_ktons_2030`.
+
+---
+
+#### Task 8.4 — Hub-to-Hub Link Flow Loading `[not started]`
+
+Assign flow to each of the 133 regional hub network links.
+
+##### Method (direct-pair assignment, simplifying assumption)
+
+For each region-pair `(r_o, r_d)` with `r_o ≠ r_d`, look up the hub pair `(h_o, h_d)` via `hub_region_assignments.csv`. Check whether the edge `(h_o_candidate_id, h_d_candidate_id)` exists in `Data/Task5/task5_hub_network_links_flow_weighted.csv` (match on unordered pair of `hub_a_candidate_id` / `hub_b_candidate_id`).
+
+- If the direct edge exists: assign the flow to that link.
+- If the direct edge does NOT exist: assign to the path `h_o → nearest_neighbor_of_h_o_toward_h_d` (use the existing Euclidean distances in `task5_hub_network_links_flow_weighted.csv` to find the neighbor that minimizes remaining distance to h_d). This handles the ~few region pairs whose hubs are not directly linked.
+
+For each link in the 133-link network: sum all inter-region flows routed through it (both directions, since links are undirected).
+
+**Output:** `Data/Task8/hub_link_flows.csv` — 133 rows × columns: `hub_a_candidate_id`, `hub_b_candidate_id`, `hub_a_name`, `hub_b_name`, `distance_miles`, `flow_ktons_2025`, `flow_ktons_2030`, `flow_intensity_original_ktons` (Task 5.5 construction weight, for comparison).
+
+---
+
+#### Task 8.5 — Gateway-Level Throughput `[not started]`
+
+Compute the total freight handled at each of the 312 gateway hubs for 2025 and 2030.
+
+##### Method
+
+Load `Data/Task8/area_flow_matrix.parquet` (from Task 8.2).
+
+Load `county_routing_lookup.parquet` (from Task 8.1); derive per-area gateway shares:
+
+    gw_share_by_area = gateway_area_assignments.csv grouped by area_id →
+        gw_share[g, a] = s_g / sum(s_g for all g in area a)
+
+For each row `(origin_area, dest_area, tons_2025, tons_2030)` in the area flow matrix:
+
+- Origin-side: for each gateway g_o assigned to `origin_area`:
+    `gw_outbound[g_o] += tons × gw_share[g_o, origin_area]`
+- Dest-side: for each gateway g_d assigned to `dest_area`:
+    `gw_inbound[g_d] += tons × gw_share[g_d, dest_area]`
+
+Gateway throughput = inbound + outbound (intra-area flows counted once).
+
+**Output:** `Data/Task8/gateway_throughput.csv` — 312 rows × columns: `candidate_id`, `facility_name`, `source_state`, `area_id`, `region_id`, `inbound_ktons_2025`, `outbound_ktons_2025`, `throughput_ktons_2025`, `throughput_ktons_2030`.
+
+---
+
+#### Task 8.6 — Interface Node Flow Routing `[not started]`
+
+Connect the Task 2 interface node allocations to the nearest regional hub(s).
+
+##### Method
+
+Interface node allocations are pre-computed in Task 2 (use as-is — no re-derivation).
+
+**Unit normalization**: `task2_continental_interface_nodes_final.csv` has `tons_2025`/`tons_2030` in raw short tons — divide by 1000 to convert to ktons before use. Global and national files are already in ktons.
+
+For each of the 29 interface nodes, find the nearest regional hub by minimum Euclidean distance in EPSG:9311:
+- Project interface node lat/lon to EPSG:9311 (use `pyproj.Transformer` from EPSG:4326 to EPSG:9311).
+- Load `Data/Task5/selected_hubs.csv`, project hub lat/lon to EPSG:9311 using the same transformer.
+- For each interface node: `nearest_hub = argmin(distance to all 50 hub locations)`.
+- Record `distance_miles` as the projected distance / 1609.34.
+
+**Inbound flows**: interface node's `tons_2025_ktons` is credited to the nearest hub as additional inbound throughput.
+**Outbound flows**: same tons credited as outbound (symmetry assumption — we do not have directional split for interface nodes at this stage).
+
+**Output:** `Data/Task8/interface_hub_routing.csv` — 29 rows × columns: `node_name`, `interface_class`, `nearest_hub_candidate_id`, `nearest_hub_name`, `distance_miles`, `tons_2025_ktons`, `tons_2030_ktons`.
+
+Update `hub_throughput.csv` with an `interface_throughput_ktons_2025` and `interface_throughput_ktons_2030` column by joining on `nearest_hub_candidate_id`.
+
+---
+
+#### Task 8.7 — Analysis: Critical Hubs, Corridors, and Concentration Patterns `[not started]`
+
+Identify and rank the most critical nodes and links in the network for 2025.
+
+##### Metrics to compute
+
+**Hub criticality (regional hubs):**
+- Rank by `throughput_ktons_2025` (descending). Report top 10.
+- Compute `interface_share` = `interface_throughput_ktons_2025 / throughput_ktons_2025` to flag hubs that are primary entry points for external flows.
+- Flag hubs with `n_regions_served = 2` (the 2 multi-region hubs).
+
+**Hub criticality (gateway hubs):**
+- Rank by `throughput_ktons_2025` (descending). Report top 20.
+- Group by `region_id`: identify regions with the highest total gateway throughput.
+
+**Link criticality:**
+- Rank `hub_link_flows.csv` by `flow_ktons_2025` (descending). Report top 15 corridors.
+- Compute `flow_per_mile = flow_ktons_2025 / distance_miles` as an intensity metric.
+- Overlay with `flow_intensity_original_ktons` to validate that high-flow links were correctly captured in Task 5.5.
+
+**2030 growth:**
+- For each hub and each link, compute `growth_pct = (value_2030 - value_2025) / value_2025 × 100`.
+- Report top 10 hubs and links by absolute growth (ktons added).
+
+**Freight concentration:**
+- Compute Gini coefficient of `throughput_ktons_2025` across the 50 regional hubs.
+- Compute the share of total network flow carried by the top-5 and top-10 hubs.
+- Report the share of total flow that passes through the NJ/NY metro corridor (regions 3, 18, 34, 36 and their hubs).
+
+---
+
+#### Task 8.8 — Figures and Exports `[not started]`
+
+Produce final flow-assignment maps and tabular outputs.
+
+##### Figures
+
+| File | Content |
+|------|---------|
+| `Data/Task8/figures/fig_hub_throughput_map.png` | NE basemap; hub markers sized by `throughput_ktons_2025`; top-10 hubs labeled; color by interface_share |
+| `Data/Task8/figures/fig_hub_link_flow_map.png` | NE basemap; hub_to_hub links with linewidth ∝ `flow_ktons_2025`; top-15 corridors highlighted; hub markers at endpoints |
+| `Data/Task8/figures/fig_gateway_throughput_map.png` | NE basemap; gateway markers sized by `throughput_ktons_2025`; regional hub stars overlaid for reference |
+| `Data/Task8/figures/fig_top_corridors_bar.png` | Horizontal bar chart of top-15 hub-to-hub corridors by `flow_ktons_2025` and `flow_ktons_2030` side-by-side |
+| `Data/Task8/figures/fig_hub_throughput_bar.png` | Bar chart of top-20 regional hubs by throughput (2025 and 2030), sorted descending |
+
+##### Tabular exports
+
+| File | Content |
+|------|---------|
+| `Data/Task8/hub_throughput.csv` | 50-row regional hub throughput table (updated with interface_throughput column) |
+| `Data/Task8/gateway_throughput.csv` | 312-row gateway hub throughput table |
+| `Data/Task8/hub_link_flows.csv` | 133-row link flow table |
+| `Data/Task8/interface_hub_routing.csv` | 29-row interface-to-hub routing table |
+| `Data/Task8/area_flow_matrix.parquet` | 132×132 area-pair internal flow matrix |
+| `Data/Task8/county_routing_lookup.parquet` | 434-county routing lookup with gateway/hub shares |
 
 ---
 

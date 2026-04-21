@@ -102,6 +102,12 @@ Key files for active tasks — always check full `Doc/Data.md` for schema before
 | `region_assignment.csv` | `Data/Task3/outputs/` | 434-row county→region_id map; key join for Task 5 county demand weights |
 | `region_metrics.csv` | `Data/Task3/outputs/` | 50-row region summary with centroid_x_m, centroid_y_m (EPSG:9311), T_r |
 | `ne_counties_prepared.gpkg` | `Data/Task3/derived/` | 434-county GeoPackage with centroid_x/y and throughput; source of w_cr for Task 5 |
+| `selected_hubs.csv` | `Data/Task5/` | Final 50 regional hubs; primary exclusion list for Task 6 candidate screening |
+| `hub_region_assignments.csv` | `Data/Task5/` | 52-row hub↔region assignment table; used to connect areas/gateways to regional hubs |
+| `task5_hub_network_links_flow_weighted.csv` | `Data/Task5/` | Final 133-link regional network for downstream multi-tier work |
+| `area_assignment.csv` | `Data/Task6/` | County→area_id map; required for Task 6 feasibility and adjacency logic |
+| `area_metrics_phase2.csv` | `Data/Task6/` | 132-area metrics table with `m_a` and final gateway capacity columns |
+| `gateway_selected.csv` | `Data/Task6/` | Final 312 selected gateways with served-area summaries |
 
 # Casework Tasks
 
