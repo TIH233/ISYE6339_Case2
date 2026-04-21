@@ -1061,7 +1061,7 @@ Save the unified node and edge catalogs and verify completeness.
 
 ---
 
-### Task 8 — Flow Assignment `[not started]`
+### Task 8 — Flow Assignment `[complete]`
 
 Assign 2025 and 2030 county-to-county freight flows through the multi-tier network; compute throughput at every node and every link; identify critical hubs and corridors.
 
@@ -1272,7 +1272,7 @@ Update `hub_throughput.csv` with an `interface_throughput_ktons_2025` and `inter
 
 ---
 
-#### Task 8.7 — Analysis: Critical Hubs, Corridors, and Concentration Patterns `[not started]`
+#### Task 8.7 — Analysis: Critical Hubs, Corridors, and Concentration Patterns `[complete]`
 
 Identify and rank the most critical nodes and links in the network for 2025.
 
@@ -1304,7 +1304,7 @@ Identify and rank the most critical nodes and links in the network for 2025.
 
 ---
 
-#### Task 8.8 — Figures and Exports `[not started]`
+#### Task 8.8 — Figures and Exports `[complete]`
 
 Produce final flow-assignment maps and tabular outputs.
 
