@@ -427,7 +427,7 @@ Produce the final map, network diagram, and tabular outputs for Task 5 reporting
 
 ---
 
-### Task 6 — Gateway Node Design `[in process]`
+### Task 6 — Gateway Node Design `[complete]`
 
 Cluster counties into freight areas within each region; screen CoStar for gateway candidates; select nodes avoiding redundancy. Implemented in two phases: **Phase 1** `[complete]` — population-typed Simulated Annealing (SA) area clustering using a standalone Task 6 module patterned after Task 3; **Phase 2** `[not started]` — Set-Cover MIP gateway hub selection per area.
 
@@ -691,7 +691,7 @@ Sum `external_throughput_ktons` from `region_assignment.csv` across all counties
 
 ---
 
-#### Task 6 Phase 2 — Gateway Hub Selection `[editing]`
+#### Task 6 Phase 2 — Gateway Hub Selection `[complete]`
 
 ##### Overview and Key Differences from Task 5
 
@@ -723,7 +723,7 @@ Apply a single global Set-Cover MIP for gateway hub selection across all 132 are
 
 ---
 
-#### Task 6.7 — Candidate Set G and Z_gw Construction `[editing]`
+#### Task 6.7 — Candidate Set G and Z_gw Construction `[complete]`
 
 Build the gateway candidate set G and the feasibility set Z_gw.
 
@@ -771,7 +771,7 @@ Store S as a list of (g_idx, g_idx', area_id) triples. Report |S| — this deter
 
 ---
 
-#### Task 6.8 — Objective Coefficients and Capacity Parameters `[editing]`
+#### Task 6.8 — Objective Coefficients and Capacity Parameters `[complete]`
 
 Pre-compute all MIP coefficients outside the solver loop.
 
@@ -801,7 +801,7 @@ Report distribution of RHS_a and confirm that each area has sufficient total fea
 
 ---
 
-#### Task 6.9 — MIP Build and Gurobi Solution `[editing]`
+#### Task 6.9 — MIP Build and Gurobi Solution `[complete]`
 
 Build and solve the single global MIP using `gurobipy`.
 
@@ -846,7 +846,7 @@ Build and solve the single global MIP using `gurobipy`.
 
 ---
 
-#### Task 6.10 — Solution Analysis and Gateway Characterization `[editing]`
+#### Task 6.10 — Solution Analysis and Gateway Characterization `[complete]`
 
 Characterize the selected gateway set and assess solution quality.
 
@@ -869,7 +869,7 @@ For each area a: assigned gateway(s), total assigned sqft vs. RHS_a (capacity sl
 
 ---
 
-#### Task 6.11 — Network Link Definition `[editing]`
+#### Task 6.11 — Network Link Definition `[complete]`
 
 Define two link types for the gateway tier network.
 
@@ -890,7 +890,7 @@ For each pair of areas (a, a') in the same region r: add a link if they share at
 
 ---
 
-#### Task 6.12 — Figures and Exports `[editing]`
+#### Task 6.12 — Figures and Exports `[complete]`
 
 Produce final outputs for Task 6 reporting.
 
