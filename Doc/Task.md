@@ -1183,7 +1183,7 @@ Hub throughput:
 
 ---
 
-#### Task 8.4 — Hub-to-Hub Link Flow Loading `[not started]`
+#### Task 8.4 — Hub-to-Hub Link Flow Loading `[complete]`
 
 Assign flow to each of the 133 regional hub network links.
 
@@ -1211,7 +1211,7 @@ For each link in the 133-link network: sum all inter-region flows routed through
 
 ---
 
-#### Task 8.5 — Gateway-Level Throughput `[not started]`
+#### Task 8.5 — Gateway-Level Throughput `[complete]`
 
 Compute the total freight handled at each of the 312 gateway hubs for 2025 and 2030.
 
@@ -1241,7 +1241,7 @@ Gateway throughput = inbound + outbound (intra-area flows counted once).
 
 ---
 
-#### Task 8.6 — Interface Node Flow Routing `[not started]`
+#### Task 8.6 — Interface Node Flow Routing `[complete]`
 
 Connect the Task 2 interface node allocations to the nearest regional hub(s).
 
