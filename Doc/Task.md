@@ -691,19 +691,225 @@ Sum `external_throughput_ktons` from `region_assignment.csv` across all counties
 
 ---
 
-#### Task 6 Phase 2 — Gateway Hub Selection `[not started]`
+#### Task 6 Phase 2 — Gateway Hub Selection `[editing]`
 
-*(Detailed specification to be written after Phase 1 outputs are confirmed.)*
+##### Overview and Key Differences from Task 5
 
-##### Overview
+Apply a single global Set-Cover MIP for gateway hub selection across all 132 areas (analogous to Task 5's region-level MIP, but at the area tier). All differences from Task 5 are listed here for quick orientation:
 
-Apply a Set-Cover MIP per area (analogous to Task 5's region-level MIP, but at the area tier with looser capacity requirements and more aggressive hub count). Key differences from Task 5:
+| Dimension | Task 5 (regional hubs) | Task 6 Phase 2 (gateway hubs) |
+|-----------|------------------------|-------------------------------|
+| Units covered | 50 regions | 132 areas |
+| Candidate pool | `primary_regional_hub_candidates.csv` ≥ 200k sqft, 1,862 rows | `preprocessed_capacity_location.csv` ≥ 20k sqft, 2,064 rows |
+| Coverage radius | 150 miles (241,402 m) | 50 miles (80,467 m) |
+| Hub count target | 1 per region (min-coverage) | m_a per area (demand-scaled, see Task 6.7) |
+| Concentration cap | ≤ 2 regions per hub | ≤ 2 areas per gateway |
+| Separation constraint | none | co-area selected gateways must be ≥ 20 miles apart |
+| Road gate | β = 90th pct, hard pre-filter | none (gateway hubs tolerate lower interstate proximity) |
+| Capacity proxy | Q̄_hub · (T_r / T̄_r) | Q̄_gw · (T_a / T̄_a) |
+| Expected open hubs | ~50 | ~319 total gateway slots across 132 areas |
 
-- Candidate pool: `preprocessed_capacity_location.csv` filtered to `usable_available_space_sf ≥ 20,000` sqft (2,064 candidates; paper threshold is 20k ft²).
-- Hub count per area: `m_a = max(2, ceil(daily_demand_a / hub_capacity_threshold))` where hub_capacity_threshold is calibrated from the candidate pool's capacity distribution.
-- Minimum separation: selected hubs within the same area should be ≥ 20 miles apart (resilience constraint; paper: > 20 miles).
-- Gateway hubs connect to the region's assigned regional hub(s) from Task 5; inter-area links are defined by adjacency and freight interaction.
-- Known sparse areas: regions 4 and 16 (Appalachian) may yield < 2 candidates/area — document and note as a coverage gap.
+**EDA-confirmed parameters (do not re-derive):**
+
+| Parameter | Value | Source |
+|-----------|-------|--------|
+| Q̄_gw | 296,862 sqft | median `usable_available_space_sf` in candidate pool |
+| T_mean_area | 3,389 ktons | mean `external_throughput_ktons` across 132 areas (`area_metrics.csv`) |
+| Expected total gateway slots (Σ m_a) | 319 | EDA on `area_metrics.csv` |
+| Areas with 0 in-area candidates | some | resolved by Z_gw 50-mile radius |
+| Areas needing Z_gw radius (in-area < m_a) | 13 | resolved by Z_gw radius |
+
+**Implementation location:** `Task6/task6_phase2.ipynb` (new notebook, mirroring `Task5/task5_mip.ipynb` cell structure).
+
+---
+
+#### Task 6.7 — Candidate Set G and Z_gw Construction `[editing]`
+
+Build the gateway candidate set G and the feasibility set Z_gw.
+
+##### G construction
+
+- Load `Data/Task4/processed/preprocessed_capacity_location.csv` (2,064 rows).
+- Apply ≥ 20,000 sqft filter on `usable_available_space_sf` (all 2,064 rows pass; actual pool min is 100k).
+- **Exclude regional hubs**: drop any candidate whose `candidate_id` appears in `Data/Task5/selected_hubs.csv`. Gateway hubs must be distinct from the already-selected regional tier. Load `selected_hubs.csv`, extract the `candidate_id` column, and filter G accordingly. Report how many candidates are removed (expected: ~50).
+- **No road-accessibility β gate** — unlike Task 5, gateway hubs tolerate lower interstate proximity.
+- Project each candidate to EPSG:9311 using lat/lon.
+- Report: final |G|, per-state count.
+
+##### m_a (target hub count per area)
+
+Compute once from `Data/Task6/area_metrics.csv`:
+
+    T_mean = area_metrics['external_throughput_ktons'].mean()   # ≈ 3,389 ktons (EDA-confirmed)
+
+    m_a[a] = max(1, min(5, ceil(2.0 × T_a / T_mean)))   for each area a
+
+- Floor = 1 (not 2): low-demand areas legitimately need only 1 gateway.
+- Cap = 5: prevents runaway count in a few ultra-high-demand metro areas.
+- Expected distribution: {1:32, 2:45, 3:32, 4:14, 5:9}, Σ m_a = 319, mean = 2.42.
+- **Do not hard-code T_mean**; compute it at runtime from the file so the formula stays correct if area_metrics changes.
+
+##### Z_gw construction
+
+- Load area centroids `centroid_x_m, centroid_y_m` from `area_metrics.csv` (EPSG:9311).
+- For each (g ∈ G, a ∈ A): compute Euclidean distance in EPSG:9311 meters.
+- Include (g, a) in Z_gw if distance ≤ 80,467 m (50 miles).
+- **Also include all in-area candidates** regardless of centroid distance: join G to `area_assignment.csv` on `county_fips = fips`; any candidate whose county belongs to area a is included in Z_gw for (g, a).
+- Verify: every area a has ≥ m_a entries in Z_gw. If any area falls short (expected: 0 after radius + in-area inclusion), report it and expand the radius to 100 miles for that area only.
+
+**Known issue — separation feasibility in sparse areas:** Regions 4 and 16 (Appalachian) have < 2 candidates per estimated area. The MIP will attempt to satisfy m_a=1 (low demand) for these areas; log them explicitly after Z_gw construction. No intervention needed — the MIP handles coverage gaps naturally and the report flags them.
+
+##### Pairwise separation clash set S
+
+Precompute before model build (not inside solver):
+
+    S = {(g, g', a) : (g,a) ∈ Z_gw, (g',a) ∈ Z_gw, g < g', dist(g, g') < 32,187 m (20 miles)}
+
+Store S as a list of (g_idx, g_idx', area_id) triples. Report |S| — this determines the number of separation constraints added to the MIP.
+
+**Key outputs:** `Data/Task6/cache/G_candidates.parquet` (2,064 rows with EPSG:9311 coords and m_a per area), `Data/Task6/cache/Z_gw_pairs.npy` (index pairs), `Data/Task6/cache/separation_clashes.parquet` (S triples), `m_a` series saved in `area_metrics_phase2.csv`.
+
+---
+
+#### Task 6.8 — Objective Coefficients and Capacity Parameters `[editing]`
+
+Pre-compute all MIP coefficients outside the solver loop.
+
+##### County centroid distances (d_gca)
+
+- Load `Data/Task3/derived/ne_counties_prepared.gpkg`; extract `centroid_x`, `centroid_y` (EPSG:9311) and `external_throughput_ktons` per county (use as `w_ca`).
+- Load `Data/Task6/area_assignment.csv` to map county fips → area_id.
+- For each (g, a) ∈ Z_gw: compute d_gca for all counties c ∈ C_a as Euclidean distance from hub g centroid to county centroid c.
+- Store as a dict `d_gca[(g_idx, area_id)] = {county_fips: distance_m}` or equivalent sparse structure.
+
+##### Objective cost coefficients (ĉ_ga)
+
+    Q̄_gw = 296,862 sqft   (EDA-confirmed; still recompute at runtime from G)
+
+    ĉ_ga = (∑_{c ∈ C_a} w_ca · d_gca) · (Q̄_gw / s_g)^0.5
+
+Same formula as Task 5. Larger facilities receive a moderate cost discount; geography remains the primary driver.
+
+##### 6.8 — Capacity constraint RHS
+
+    T̄_a = T_mean   (same value used for m_a)
+    RHS_a = Q̄_gw · (T_a / T̄_a)   for each area a
+
+Report distribution of RHS_a and confirm that each area has sufficient total feasible capacity in Z_gw (i.e., sum of s_g for all g in Z_gw for that area ≥ RHS_a). Areas failing this check need the Z_gw radius expanded — expected 0 failures given dense candidate pool.
+
+**Key outputs:** `c_hat` dict, `cap_rhs` array, scalar Q̄_gw, T̄_a.
+
+---
+
+#### Task 6.9 — MIP Build and Gurobi Solution `[editing]`
+
+Build and solve the single global MIP using `gurobipy`.
+
+##### 6.9 — MIP Formulation
+
+**Sets and indices:**
+
+| Symbol | Definition |
+|--------|-----------|
+| G | Gateway candidates (2,064 rows) |
+| A | Areas (132) |
+| Z_gw | Feasible (g, a) pairs |
+| S | Separation clash triples (g, g', a) with dist(g,g') < 20 mi |
+
+**Variables:** `A_ga` ∈ {0,1} for (g,a) ∈ Z_gw; `O_g` ∈ {0,1} for g ∈ G.
+
+**Objective:** minimize ∑_{(g,a)∈Z_gw} A_ga · ĉ_ga
+
+**Constraints:**
+
+| # | Formula | Meaning |
+|---|---------|---------|
+| 1 | ∑_{g:(g,a)∈Z_gw} A_ga ≥ m_a ∀a | Every area gets ≥ m_a gateways |
+| 2 | ∑_{a:(g,a)∈Z_gw} A_ga ≤ 2 ∀g | Each gateway serves ≤ 2 areas |
+| 3 | ∑_{g:(g,a)∈Z_gw} A_ga · s_g ≥ RHS_a ∀a | Capacity coverage per area |
+| 4 | A_ga + A_g'a ≤ 1 ∀(g,g',a) ∈ S | No two gateways < 20 mi apart in same area |
+| 5 | O_g ≤ ∑_{a:(g,a)∈Z_gw} A_ga ∀g | Open only if assigned |
+| 6 | A_ga, O_g ∈ {0,1} | Binary |
+
+**Solver parameters:** `TimeLimit=600`, `MIPGap=0.01`, `OutputFlag=1`.
+
+**Note on constraint 4:** S may be large if the candidate pool is dense. If |S| > 500,000, add constraints lazily via a Gurobi callback on integer solutions rather than upfront. Check |S| after Task 6.7 and adjust accordingly.
+
+##### 6.9 — Solution extraction
+
+- Extract selected gateways: `{g : ∃a with A_ga.X > 0.5}` (same pattern as Task 5 — do not rely on `O_g.X`).
+- Extract assignments: `{(g, a) : A_ga.X > 0.5}`.
+- Record: objective value, MIP gap, solve time.
+- If MIP is infeasible (expected: not, but possible for Appalachian sparse areas), report the infeasible areas and relax constraint 1 for those areas to `≥ min(m_a, |Z_gw_a|)`.
+
+**Key outputs:** raw solution dicts; downstream formatting in Task 6.10.
+
+---
+
+#### Task 6.10 — Solution Analysis and Gateway Characterization `[editing]`
+
+Characterize the selected gateway set and assess solution quality.
+
+##### Per-gateway report
+
+For each selected gateway g: `candidate_id`, `facility_name`, `city`, `state`, `area(s) served`, `s_g` (sqft), `distance to area centroid` (miles), `ĉ_ga` for each assigned area.
+
+##### Per-area report
+
+For each area a: assigned gateway(s), total assigned sqft vs. RHS_a (capacity slack), demand-weighted distance to nearest gateway, flag if served by out-of-area candidate (county_fips not in area a).
+
+##### 6.10 — Aggregate statistics
+
+- Total open gateways, gateways serving 1 vs. 2 areas.
+- Distribution of assigned sqft by area relative to RHS_a.
+- Areas in regions 4 and 16 (Appalachian): report coverage status and actual m_a achieved. These are documented sparse-area risks — do not treat as a solver error.
+- Summary table: total gateways by region_type.
+
+**Key outputs:** `hub_report` and `area_report` DataFrames.
+
+---
+
+#### Task 6.11 — Network Link Definition `[editing]`
+
+Define two link types for the gateway tier network.
+
+##### Area-to-regional-hub links
+
+For each area a: connect area's selected gateway(s) to the regional hub(s) assigned to region r = parent region of area a, from `Data/Task5/selected_hubs.csv` and `Data/Task5/hub_region_assignments.csv`.
+
+- Link attributes: `gateway_candidate_id`, `regional_hub_candidate_id`, `region_id`, `area_id`, `distance_miles`, `external_throughput_ktons` (area demand as link weight).
+- Every area must have at least one such link. Verify no orphaned areas.
+
+##### Inter-area links (intra-region)
+
+For each pair of areas (a, a') in the same region r: add a link if they share at least one county border (use `Data/Task3/cache/ne_county_edges.parquet` to check county adjacency; two areas are adjacent if any county in a is adjacent to any county in a').
+
+- Link attributes: `area_a`, `area_b`, `region_id`, `shared_borders` (count of adjacent county pairs), `cross_area_flow_ktons` (sum of county-to-county external throughput across the border).
+
+**Key outputs:** `Data/Task6/gateway_area_to_hub_links.csv`, `Data/Task6/gateway_inter_area_links.csv`.
+
+---
+
+#### Task 6.12 — Figures and Exports `[editing]`
+
+Produce final outputs for Task 6 reporting.
+
+##### Figures
+
+| File | Content |
+|------|---------|
+| `Data/Task6/figures/fig_gateway_hub_locations.png` | NE basemap; gateway markers colored by region, sized by sqft; regional hub markers overlaid for reference |
+| `Data/Task6/figures/fig_gateway_hub_network.png` | Area-to-hub links (colored by region) + inter-area links (gray); link thickness ∝ external_throughput_ktons |
+
+##### Tabular exports
+
+| File | Content |
+|------|---------|
+| `Data/Task6/gateway_selected.csv` | All selected gateways with full characterization |
+| `Data/Task6/gateway_area_assignments.csv` | Full (g, a) pair list with ĉ_ga |
+| `Data/Task6/gateway_area_to_hub_links.csv` | Area-to-regional-hub links |
+| `Data/Task6/gateway_inter_area_links.csv` | Inter-area adjacency links |
+| `Data/Task6/area_metrics_phase2.csv` | `area_metrics.csv` extended with `m_a`, `n_selected_gateways`, `total_assigned_sqft`, `capacity_slack`, `demand_weighted_dist_miles` |
 
 ---
 
